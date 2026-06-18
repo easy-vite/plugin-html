@@ -1,36 +1,30 @@
-name: Npm Publish
+name: Publish npm
 
 on:
   push:
-    branches:
-      - main
+    tags:
+      - v*
+
+permissions:
+  contents: read
 
 jobs:
-  publish-npm:
-    if: "contains(github.event.head_commit.message, 'release')"
-    runs-on: ${{matrix.os}}
-
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        node-version: [22.x]
-      fail-fast: false
-
+  publish:
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 11.7.0
 
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 22.x
           registry-url: https://registry.npmjs.org/
-          cache: 'pnpm'
+          cache: pnpm
 
       - name: Install Dependencies
         run: pnpm install
@@ -38,7 +32,7 @@ jobs:
       - name: Build
         run: pnpm build:core
 
-      - name: Publish to NPM
-        run: pnpm -r publish --access public --no-git-checks
+      - name: Publish to npm
+        run: pnpm publish --access public --no-git-checks --filter @easy-vite/plugin-html
         env:
-          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
