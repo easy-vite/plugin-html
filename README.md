@@ -1,16 +1,35 @@
 # @easy-vite/plugin-html
 
+> A modern Vite plugin for HTML — EJS templating, minification, MPA support, custom entry/template & `.env` injection. Framework-agnostic (Vue / React / Svelte). Built for Vite 8 (Rolldown + Oxc).
+
 **English** | [中文](./README.zh_CN.md)
 
-[![npm][npm-img]][npm-url] [![node][node-img]][node-url]
+[![npm version][npm-img]][npm-url]
+[![downloads][downloads-img]][downloads-url]
+[![license][license-img]][license-url]
+[![vite peer][vite-img]][vite-url]
+[![node][node-img]][node-url]
 
-## Features
+## ✨ Highlights
 
-- HTML compression capability
-- EJS template capability
-- Multi-page application support
-- Support custom `entry`
-- Support custom `template`
+Rebuilt from `vite-plugin-html` for the **Vite 8** era — ESM-first, **zero-clutter runtime deps**, powered by the same stack Vite itself uses (Rolldown + Oxc).
+
+**Core capabilities**
+
+- 🗜️ HTML minification — powered by `html-minifier-terser`
+- 📝 EJS templating — variables, partials & loops directly in `index.html`
+- 📄 Multi-page apps (MPA) — multiple entries & templates, first-class
+- 🚪 Custom `entry` / `template` — point to any path
+- 🔐 `.env` injection — via Vite-native `loadEnv`
+- 🏷️ Tag injection — inject `<script>` / `<link>` / custom tags anywhere
+- 🧩 Framework-agnostic — Vue / React / Svelte / plain HTML
+
+**Built on a modern toolchain**
+
+- ⚡ Vite 8 (Rolldown + Oxc) — backward compatible to Vite 5
+- 🪶 Only **7 runtime deps** (was 12+) — dropped `fs-extra`, `dotenv`, `consola`, etc.
+- 📦 Dual ESM / CJS export + full TypeScript types
+- 🛠️ oxlint + oxfmt replacing eslint / prettier
 
 ## Install (pnpm or yarn or npm)
 
@@ -227,7 +246,13 @@ pnpm format     # format with oxfmt
 
 MIT
 
-[npm-img]: https://img.shields.io/npm/v/@easy-vite/plugin-html.svg
+[npm-img]: https://img.shields.io/npm/v/@easy-vite/plugin-html.svg?style=flat-square
 [npm-url]: https://npmjs.com/package/@easy-vite/plugin-html
-[node-img]: https://img.shields.io/node/v/@easy-vite/plugin-html.svg
+[downloads-img]: https://img.shields.io/npm/dm/@easy-vite/plugin-html.svg?style=flat-square&color=42b883
+[downloads-url]: https://npmjs.com/package/@easy-vite/plugin-html
+[license-img]: https://img.shields.io/npm/l/@easy-vite/plugin-html.svg?style=flat-square
+[license-url]: ./LICENSE
+[vite-img]: https://img.shields.io/badge/vite-%3E%3D5.0.0-646cff?style=flat-square
+[vite-url]: https://vite.dev
+[node-img]: https://img.shields.io/node/v/@easy-vite/plugin-html.svg?style=flat-square
 [node-url]: https://nodejs.org/en/about/releases/

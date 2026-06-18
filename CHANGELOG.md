@@ -1,4 +1,31 @@
-# [4.0.0](https://github.com/vbenjs/vite-plugin-html/compare/v3.2.1...v4.0.0) (2026-06-18)
+# [4.0.3] (2026-06-18)
+
+### Bug Fixes
+
+- 构建产物不再包含 sourcemap（`build.sourcemap: false`），减小 npm 包体积
+
+### Documentation
+
+- README 首屏重构：新增醒目标语、5 枚 badge（npm version / downloads / license / vite peer / node），「Features」段升级为「✨ 核心亮点」（核心能力 + 现代化工具链分组），中英双语同步
+
+# [4.0.2] (2026-06-18)
+
+### Continuous Integration
+
+- GitHub Actions 升级至 Node 24 runtime（`actions/checkout@v7`、`actions/setup-node@v6`、`pnpm/action-setup@v6`）
+- 启用 npm provenance（OIDC，`id-token: write`）
+
+# [4.0.1] (2026-06-18)
+
+### Bug Fixes
+
+- 修复发布包缺少 `README.md` / `README.zh_CN.md` 的问题（`prepublishOnly` 自动同步根目录 README 到 core）
+
+### Continuous Integration
+
+- 改为 tag 触发自动发布（`v*`），使用 npm Automation Token 免 OTP 适配非交互式 CI
+
+# [4.0.0] (2026-06-18)
 
 ### ⚠ BREAKING CHANGES
 

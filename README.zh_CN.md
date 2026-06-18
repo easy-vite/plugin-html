@@ -1,16 +1,35 @@
 # @easy-vite/plugin-html
 
+> 现代化的 Vite HTML 处理插件 —— EJS 模板、HTML 压缩、多页应用（MPA）、自定义 entry/template 与 `.env` 注入。框架无关（Vue / React / Svelte 通用）。面向 Vite 8（Rolldown + Oxc）。
+
 **中文** | [English](./README.md)
 
-[![npm][npm-img]][npm-url] [![node][node-img]][node-url]
+[![npm version][npm-img]][npm-url]
+[![downloads][downloads-img]][downloads-url]
+[![license][license-img]][license-url]
+[![vite peer][vite-img]][vite-url]
+[![node][node-img]][node-url]
 
-## 功能
+## ✨ 核心亮点
 
-- HTML 压缩能力
-- EJS 模版能力
-- 多页应用支持
-- 支持自定义`entry`
-- 支持自定义`template`
+基于 `vite-plugin-html` 为 **Vite 8** 时代重构 —— ESM 优先、**零冗余运行时依赖**，与 Vite 同款底层（Rolldown + Oxc）。
+
+**核心能力**
+
+- 🗜️ HTML 压缩 —— 基于 `html-minifier-terser`
+- 📝 EJS 模板 —— 直接在 `index.html` 中使用变量、子模板与循环
+- 📄 多页应用（MPA）—— 多入口与多模板，一等公民支持
+- 🚪 自定义 `entry` / `template` —— 指向任意路径
+- 🔐 `.env` 注入 —— 基于 Vite 原生 `loadEnv`
+- 🏷️ 标签注入 —— 任意位置注入 `<script>` / `<link>` / 自定义标签
+- 🧩 框架无关 —— Vue / React / Svelte / 原生 HTML
+
+**现代化工具链**
+
+- ⚡ Vite 8（Rolldown + Oxc）—— 向下兼容至 Vite 5
+- 🪶 仅 **7 个运行时依赖**（原 12+）—— 移除 `fs-extra`、`dotenv`、`consola` 等
+- 📦 ESM / CJS 双格式导出 + 完整 TypeScript 类型
+- 🛠️ oxlint + oxfmt —— 替代 eslint / prettier
 
 ## 安装 (pnpm or yarn or npm)
 
@@ -227,7 +246,13 @@ pnpm format     # 使用 oxfmt 格式化代码
 
 MIT
 
-[npm-img]: https://img.shields.io/npm/v/@easy-vite/plugin-html.svg
+[npm-img]: https://img.shields.io/npm/v/@easy-vite/plugin-html.svg?style=flat-square
 [npm-url]: https://npmjs.com/package/@easy-vite/plugin-html
-[node-img]: https://img.shields.io/node/v/@easy-vite/plugin-html.svg
+[downloads-img]: https://img.shields.io/npm/dm/@easy-vite/plugin-html.svg?style=flat-square&color=42b883
+[downloads-url]: https://npmjs.com/package/@easy-vite/plugin-html
+[license-img]: https://img.shields.io/npm/l/@easy-vite/plugin-html.svg?style=flat-square
+[license-url]: ./LICENSE
+[vite-img]: https://img.shields.io/badge/vite-%3E%3D5.0.0-646cff?style=flat-square
+[vite-url]: https://vite.dev
+[node-img]: https://img.shields.io/node/v/@easy-vite/plugin-html.svg?style=flat-square
 [node-url]: https://nodejs.org/en/about/releases/
