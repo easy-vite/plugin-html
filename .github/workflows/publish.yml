@@ -7,20 +7,21 @@ on:
 
 permissions:
   contents: read
+  id-token: write
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
         with:
           version: 11.7.0
 
       - name: Use Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 22.x
           registry-url: https://registry.npmjs.org/
@@ -33,6 +34,6 @@ jobs:
         run: pnpm build:core
 
       - name: Publish to npm
-        run: pnpm publish --access public --no-git-checks --filter @easy-vite/plugin-html
+        run: pnpm publish --access public --no-git-checks --provenance --filter @easy-vite/plugin-html
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
