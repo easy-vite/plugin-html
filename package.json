@@ -43,6 +43,9 @@
     "*.{ts,tsx,vue,js,mjs,cjs}": [
       "oxfmt --write",
       "oxlint --fix"
+    ],
+    "*.md": [
+      "oxfmt --write"
     ]
   },
   "engines": {
