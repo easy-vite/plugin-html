@@ -1,24 +1,43 @@
-import type { ResolvedConfig, PluginOption } from 'vite'
+import type {
+  IndexHtmlTransformContext,
+  PluginOption,
+  ResolvedConfig,
+} from 'vite'
 import type { InjectOptions, PageOption, Pages, UserOptions } from './typing'
-import { render } from 'ejs'
-import { isDirEmpty, loadEnv } from './utils'
-import { normalizePath } from 'vite'
+import ejs from 'ejs'
+import { loadEnv, normalizePath } from 'vite'
 import { parse } from 'node-html-parser'
-import fs from 'fs-extra'
 import path from 'pathe'
-import fg from 'fast-glob'
-import consola from 'consola'
-import { dim } from 'colorette'
+import { glob } from 'tinyglobby'
 import history from 'connect-history-api-fallback'
-import * as vite from 'vite'
+import { cp, readFile, rename, rm } from 'node:fs/promises'
+import { isDirEmpty } from './utils'
 
 const DEFAULT_TEMPLATE = 'index.html'
 const ignoreDirs = ['.', '', '/']
 
 const bodyInjectRE = /<\/body>/
 
-function getViteMajorVersion() {
-  return vite?.version ? Number(vite.version.split('.')[0]) : 2
+interface MoveOptions {
+  overwrite?: boolean
+}
+
+async function moveFile(src: string, dest: string, options: MoveOptions = {}) {
+  try {
+    await rename(src, dest)
+  } catch (err) {
+    const code = (err as NodeJS.ErrnoException).code
+    if (code === 'ENOTEMPTY' && options.overwrite) {
+      await rm(dest, { recursive: true, force: true })
+      await rename(src, dest)
+    } else if (code === 'EXDEV') {
+      // cross-device rename fallback: copy then remove source
+      await cp(src, dest, { recursive: true, force: options.overwrite })
+      await rm(src, { recursive: true, force: true })
+    } else {
+      throw err
+    }
+  }
 }
 
 export function createPlugin(userOptions: UserOptions = {}): PluginOption {
@@ -31,7 +50,10 @@ export function createPlugin(userOptions: UserOptions = {}): PluginOption {
 
   let viteConfig: ResolvedConfig
   let env: Record<string, any> = {}
-  const transformIndexHtmlHandler = async (html, ctx) => {
+  const transformIndexHtmlHandler = async (
+    html: string,
+    ctx: IndexHtmlTransformContext,
+  ) => {
     const url = ctx.filename
     const base = viteConfig.base
     const excludeBaseUrl = url.replace(base, '/')
@@ -119,59 +141,60 @@ export function createPlugin(userOptions: UserOptions = {}): PluginOption {
       )
     },
 
-    transformIndexHtml:
-      getViteMajorVersion() >= 5
-        ? {
-            // @ts-ignore
-            order: 'pre',
-            handler: transformIndexHtmlHandler,
-          }
-        : {
-            enforce: 'pre',
-            transform: transformIndexHtmlHandler,
-          },
+    transformIndexHtml: {
+      order: 'pre',
+      handler: transformIndexHtmlHandler,
+    },
     async closeBundle() {
-      const outputDirs: string[] = []
+      const dirs: string[] = []
 
       if (isMpa(viteConfig) || pages.length) {
         for (const page of pages) {
           const dir = path.dirname(page.template)
           if (!ignoreDirs.includes(dir)) {
-            outputDirs.push(dir)
+            dirs.push(dir)
           }
         }
       } else {
         const dir = path.dirname(template)
         if (!ignoreDirs.includes(dir)) {
-          outputDirs.push(dir)
+          dirs.push(dir)
         }
       }
+      const outputDirs = [...new Set(dirs)]
       const cwd = path.resolve(viteConfig.root, viteConfig.build.outDir)
-      const htmlFiles = await fg(
+      const htmlFiles = await glob(
         outputDirs.map((dir) => `${dir}/*.html`),
-        { cwd: path.resolve(cwd), absolute: true },
+        { cwd, absolute: true },
       )
 
-      await Promise.all(
-        htmlFiles.map((file) =>
-          fs.move(file, path.resolve(cwd, path.basename(file)), {
-            overwrite: true,
-          }),
-        ),
-      )
+      // move sequentially, dedup by dest to avoid concurrent rename races
+      // when multiple pages share the same output basename
+      const moves = new Map<string, string>()
+      for (const file of htmlFiles) {
+        const dest = path.resolve(cwd, path.basename(file))
+        if (!moves.has(dest)) {
+          moves.set(dest, file)
+        }
+      }
+      for (const [dest, src] of moves) {
+        await moveFile(src, dest, { overwrite: true })
+      }
 
-      const htmlDirs = await fg(
-        outputDirs.map((dir) => dir),
-        { cwd: path.resolve(cwd), onlyDirectories: true, absolute: true },
-      )
-      await Promise.all(
-        htmlDirs.map(async (item) => {
-          const isEmpty = await isDirEmpty(item)
-          if (isEmpty) {
-            return fs.remove(item)
+      // clean empty dirs deepest-first so a parent is only removed after
+      // its children (ENOTEMPTY already handled by moveFile above)
+      const absDirs = outputDirs
+        .map((dir) => path.resolve(cwd, dir))
+        .sort((a, b) => b.length - a.length)
+      for (const absDir of absDirs) {
+        try {
+          if (await isDirEmpty(absDir)) {
+            await rm(absDir, { recursive: true, force: true })
           }
-        }),
-      )
+        } catch (err) {
+          if ((err as NodeJS.ErrnoException).code !== 'ENOENT') throw err
+        }
+      }
     },
   }
 }
@@ -225,19 +248,22 @@ export async function renderHtml(
   const { data, ejsOptions } = injectOptions
 
   const ejsData: Record<string, any> = {
-    ...(viteConfig?.env ?? {}),
-    ...(viteConfig?.define ?? {}),
-    ...(env || {}),
+    ...viteConfig?.env,
+    ...viteConfig?.define,
+    ...env,
     ...data,
   }
-  let result = await render(html, ejsData, ejsOptions)
+  let result = await ejs.render(html, ejsData, ejsOptions)
 
   if (entry) {
     result = removeEntryScript(result, verbose)
+    const entrySrc = entry.startsWith('/')
+      ? entry
+      : `/${entry.replace(/^\.?\//, '')}`
     result = result.replace(
       bodyInjectRE,
       `<script type="module" src="${normalizePath(
-        `${entry}`,
+        entrySrc,
       )}"></script>\n</body>`,
     )
   }
@@ -275,12 +301,12 @@ export function removeEntryScript(html: string, verbose = false) {
     removedNode.push(item.toString())
     item.parentNode.removeChild(item)
   })
-  verbose &&
-    removedNode.length &&
-    consola.warn(`vite-plugin-html: Since you have already configured entry, ${dim(
-      removedNode.toString(),
-    )} is deleted. You may also delete it from the index.html.
-        `)
+  if (verbose && removedNode.length) {
+    // oxlint-disable-next-line no-console -- intentional user-facing notice in verbose mode
+    console.warn(
+      `@easy-vite/plugin-html: Since you have already configured entry, ${removedNode.toString()} is deleted. You may also delete it from the index.html.`,
+    )
+  }
   return root.toString()
 }
 
@@ -326,10 +352,11 @@ export function getHtmlPath(page: PageOption, root: string) {
 }
 
 export async function readHtml(path: string) {
-  if (!fs.pathExistsSync(path)) {
+  try {
+    return await readFile(path, 'utf8')
+  } catch {
     throw new Error(`html is not exist in ${path}`)
   }
-  return await fs.readFile(path).then((buffer) => buffer.toString())
 }
 
 function createRewire(
@@ -347,8 +374,8 @@ function createRewire(
 
       const template = path.resolve(baseUrl, page.template)
 
-      if (excludeBaseUrl.startsWith("/static")) {
-        return excludeBaseUrl;
+      if (excludeBaseUrl.startsWith('/static')) {
+        return excludeBaseUrl
       }
 
       if (excludeBaseUrl === '/') {

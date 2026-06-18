@@ -1,3 +1,21 @@
+# [4.0.0](https://github.com/vbenjs/vite-plugin-html/compare/v3.2.1...v4.0.0) (2026-06-18)
+
+### ⚠ BREAKING CHANGES
+
+- 最低 Node 版本提升至 `>=20.19`，最低 Vite 版本提升至 `>=5.0.0`
+- 插件包改为 ESM-first（`"type": "module"`），保留 CJS 双格式导出
+- 构建工具从 unbuild 迁移至 Vite 库模式（`vite build` + `tsc` 生成类型声明）
+- 移除自实现的 `loadEnv`，改用 Vite 内置 `loadEnv`（不再写入 `process.env.VITE_USER_NODE_ENV`）
+- 运行时依赖瘦身：移除 `fs-extra`/`dotenv`/`dotenv-expand`/`colorette`/`fast-glob`，改用 Node/Vite 原生能力 + `picocolors`/`tinyglobby`
+- 代码检查/格式化从 ESLint + Prettier 迁移至 oxlint + oxfmt
+- `transformIndexHtml` 注入的 entry 改用绝对路径（修复 template 位于子目录时的解析问题）
+
+### Features
+
+- 升级至 Vite 8（基于 Rolldown + Oxc），兼容 Vite 5/6/7/8
+- 全部依赖升级至最新版本（Vue 3.5、Vue Router 5、Vitest 4.1、TypeScript 5.9、pnpm 11 等）
+- 用 oxlint + oxfmt 替换 ESLint + Prettier
+
 # [3.2.1](https://github.com/vbenjs/vite-plugin-html/compare/v3.0.6...v3.2.1) (2023-12-26)
 
 ### Features

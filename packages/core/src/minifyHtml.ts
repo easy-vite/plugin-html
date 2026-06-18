@@ -4,6 +4,16 @@ import type { Options as MinifyOptions } from 'html-minifier-terser'
 import { minify as minifyFn } from 'html-minifier-terser'
 import { htmlFilter } from './utils/createHtmlFilter'
 
+interface HtmlOutputAsset {
+  type: 'asset'
+  fileName: string
+  source: string | Uint8Array
+}
+
+interface HtmlOutputChunk {
+  type: 'chunk'
+}
+
 function getOptions(minify: boolean): MinifyOptions {
   return {
     collapseWhitespace: minify,
@@ -41,7 +51,10 @@ export function createMinifyHtmlPlugin({
     name: 'vite:minify-html',
     // apply: 'build',
     enforce: 'post',
-    async generateBundle(_, outBundle) {
+    async generateBundle(
+      _options: unknown,
+      outBundle: Record<string, HtmlOutputAsset | HtmlOutputChunk>,
+    ) {
       if (minify) {
         for (const bundle of Object.values(outBundle)) {
           if (

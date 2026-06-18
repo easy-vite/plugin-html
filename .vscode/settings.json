@@ -6,7 +6,8 @@
   //===========================================
   "explorer.openEditors.visible": 0,
   "editor.tabSize": 2,
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.defaultFormatter": "oxc.oxfmt-vscode",
+  "oxc.lint.enable": true,
   "diffEditor.ignoreTrimWhitespace": false,
   //===========================================
   //============= Other =======================

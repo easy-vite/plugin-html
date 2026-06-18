@@ -1,5 +1,7 @@
-/// <reference types="vitest" />
+import { defineConfig } from 'vitest/config'
 
-import { defineConfig } from 'vite'
-
-export default defineConfig({})
+export default defineConfig({
+  test: {
+    include: ['packages/**/__tests__/**/*.spec.ts'],
+  },
+})

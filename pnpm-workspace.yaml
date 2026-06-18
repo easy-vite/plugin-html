@@ -1,3 +1,7 @@
 packages:
   - packages/*
   - packages/playground/*
+
+ignoreWorkspaceRootCheck: true
+allowBuilds:
+  esbuild: true

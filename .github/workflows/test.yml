@@ -15,20 +15,20 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [16.x]
+        node-version: [22.x]
         os: [ubuntu-latest]
       fail-fast: false
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v2.0.1
+        uses: pnpm/action-setup@v4
         with:
-          version: 6.28.0
+          version: 11.7.0
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           registry-url: https://registry.npmjs.org/
@@ -36,5 +36,26 @@ jobs:
 
       - run: pnpm install
 
+      - name: Lint
+        run: pnpm oxlint .
+
+      - name: Format check
+        run: pnpm oxfmt . --check
+
       - name: Test
-        run: pnpm run test
+        run: pnpm test
+
+      - name: Build core
+        run: pnpm build:core
+
+      - name: Smoke test ESM build
+        run: node --input-type=module -e "import('./packages/core/dist/index.mjs').then(m => { if (typeof m.createHtmlPlugin !== 'function') process.exit(1) })"
+
+      - name: Smoke test CJS build
+        run: node -e "const m=require('./packages/core/dist/index.cjs'); if (typeof m.createHtmlPlugin !== 'function') process.exit(1)"
+
+      - name: Build playgrounds
+        run: |
+          pnpm --filter playground-basic build
+          pnpm --filter playground-map build
+          pnpm --filter playground-entry build

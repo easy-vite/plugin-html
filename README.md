@@ -1,6 +1,8 @@
-# vite-plugin-html
+# @easy-vite/plugin-html
 
 **English** | [中文](./README.zh_CN.md)
+
+[![npm][npm-img]][npm-url] [![node][node-img]][node-url]
 
 ## Features
 
@@ -10,20 +12,26 @@
 - Support custom `entry`
 - Support custom `template`
 
-## Install (yarn or npm)
+## Install (pnpm or yarn or npm)
 
-**node version:** >=12.0.0
+**node version:** >=20.19
 
-**vite version:** >=2.0.0
+**vite version:** >=5.0.0
 
 ```bash
-yarn add vite-plugin-html -D
+pnpm add @easy-vite/plugin-html -D
 ```
 
-或
+or
 
 ```bash
-npm i vite-plugin-html -D
+yarn add @easy-vite/plugin-html -D
+```
+
+or
+
+```bash
+npm i @easy-vite/plugin-html -D
 ```
 
 ## Usage
@@ -43,10 +51,9 @@ npm i vite-plugin-html -D
 - Configure in `vite.config.ts`, this method can introduce the required functions as needed
 
 ```ts
-import { defineConfig, Plugin } from 'vite'
+import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-
-import { createHtmlPlugin } from 'vite-plugin-html'
+import { createHtmlPlugin } from '@easy-vite/plugin-html'
 
 export default defineConfig({
   plugins: [
@@ -63,7 +70,6 @@ export default defineConfig({
        * @default index.html
        */
       template: 'public/index.html',
-
       /**
        * Data that needs to be injected into the index.html ejs template
        */
@@ -76,9 +82,7 @@ export default defineConfig({
           {
             injectTo: 'body-prepend',
             tag: 'div',
-            attrs: {
-              id: 'tag',
-            },
+            attrs: { id: 'tag' },
           },
         ],
       },
@@ -91,7 +95,7 @@ Multi-page application configuration
 
 ```ts
 import { defineConfig } from 'vite'
-import { createHtmlPlugin } from 'vite-plugin-html'
+import { createHtmlPlugin } from '@easy-vite/plugin-html'
 
 export default defineConfig({
   plugins: [
@@ -111,9 +115,7 @@ export default defineConfig({
               {
                 injectTo: 'body-prepend',
                 tag: 'div',
-                attrs: {
-                  id: 'tag1',
-                },
+                attrs: { id: 'tag1' },
               },
             ],
           },
@@ -131,9 +133,7 @@ export default defineConfig({
               {
                 injectTo: 'body-prepend',
                 tag: 'div',
-                attrs: {
-                  id: 'tag2',
-                },
+                attrs: { id: 'tag2' },
               },
             ],
           },
@@ -150,13 +150,13 @@ export default defineConfig({
 
 ### UserOptions
 
-| Parameter | Types                    | Default       | Description                                       |
-| --------- | ------------------------ | ------------- | ------------------------------------------------- |
-| entry     | `string`                 | `src/main.ts` | entry file path                                   |
-| template  | `string`                 | `index.html`  | relative path to the template                     |
-| inject    | `InjectOptions`          | -             | Data injected into HTML                           |
-| minify    | `boolean｜MinifyOptions` | -             | whether to compress html                          |
-| pages     | `PageOption`             | -             | Multi-page configuration                          |
+| Parameter | Types                    | Default       | Description                   |
+| --------- | ------------------------ | ------------- | ----------------------------- |
+| entry     | `string`                 | `src/main.ts` | entry file path               |
+| template  | `string`                 | `index.html`  | relative path to the template |
+| inject    | `InjectOptions`          | -             | Data injected into HTML       |
+| minify    | `boolean｜MinifyOptions` | -             | whether to compress html      |
+| pages     | `PageOption`             | -             | Multi-page configuration      |
 
 ### InjectOptions
 
@@ -186,42 +186,48 @@ By default, the contents of the `.env` file will be injected into index.html, si
 Default compression configuration
 
 ```ts
-    collapseWhitespace: true,
-    keepClosingSlash: true,
-    removeComments: true,
-    removeRedundantAttributes: true,
-    removeScriptTypeAttributes: true,
-    removeStyleLinkTypeAttributes: true,
-    useShortDoctype: true,
-    minifyCSS: true,
+collapseWhitespace: true,
+keepClosingSlash: true,
+removeComments: true,
+removeRedundantAttributes: true,
+removeScriptTypeAttributes: true,
+removeStyleLinkTypeAttributes: true,
+useShortDoctype: true,
+minifyCSS: true,
 ```
 
-### Run the playground
+## Run the playground
 
 ```bash
 pnpm install
 
-# spa
-cd ./packages/playground/basic
+# SPA — auto build core (watch) and start the playground dev server
+pnpm dev:basic
 
-pnpm run dev
+# MPA
+pnpm dev:mpa
 
-# map
-cd ./packages/playground/mpa
-
-pnpm run dev
-
+# Custom entry / template
+pnpm dev:entry
 ```
 
-## Example project
+## Development
 
-[Vben Admin](https://github.com/anncwb/vue-vben-admin)
+```bash
+pnpm install
+pnpm build:core # build the plugin (vite lib + tsc type declarations)
+pnpm test       # run unit tests (vitest)
+pnpm lint       # lint with oxlint
+pnpm format     # format with oxfmt
+```
+
+> Requires Node `>=20.19` and pnpm `>=10`. Linting is powered by [oxlint](https://oxc.rs/docs/learn-tutorial/about-linter/introduction.html) and formatting by [oxfmt](https://oxc.rs/docs/learn-tutorial/about-formatter/introduction.html).
 
 ## License
 
 MIT
 
-[npm-img]: https://img.shields.io/npm/v/vite-plugin-html.svg
-[npm-url]: https://npmjs.com/package/vite-plugin-html
-[node-img]: https://img.shields.io/node/v/vite-plugin-html.svg
+[npm-img]: https://img.shields.io/npm/v/@easy-vite/plugin-html.svg
+[npm-url]: https://npmjs.com/package/@easy-vite/plugin-html
+[node-img]: https://img.shields.io/node/v/@easy-vite/plugin-html.svg
 [node-url]: https://nodejs.org/en/about/releases/

@@ -1,10 +1,10 @@
-const http = require('http')
-const { URL } = require('url')
+import http from 'node:http'
+import { URL } from 'node:url'
 
 const port = 8080
 
 const server = http.createServer((req, res) => {
-  const { pathname } = new URL(req.url)
+  const { pathname } = new URL(req.url, `http://localhost:${port}`)
 
   // api开头的是API请求
   if (pathname.startsWith('/api')) {

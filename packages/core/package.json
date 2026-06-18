@@ -1,16 +1,23 @@
 {
-  "name": "vite-plugin-html",
-  "version": "3.2.2",
+  "name": "@easy-vite/plugin-html",
+  "version": "4.0.0",
   "description": "A plugin for vite to Minimize index.html and use lodash.template template syntax in index.html",
-  "main": "dist/index.cjs",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
-  "exports": {
-    ".": {
-      "require": "./dist/index.cjs",
-      "import": "./dist/index.mjs",
-      "types": "./dist/index.d.ts"
-    }
+  "keywords": [
+    "html",
+    "minify",
+    "vite",
+    "vite-plugin"
+  ],
+  "homepage": "https://github.com/easy-vite/plugin-html/tree/master/#readme",
+  "bugs": {
+    "url": "https://github.com/easy-vite/plugin-html/issues"
+  },
+  "license": "MIT",
+  "author": "@easy-vite",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/easy-vite/plugin-html",
+    "directory": "packages/core"
   },
   "files": [
     "dist",
@@ -18,53 +25,42 @@
     "README.md",
     "README.zh_CN.md"
   ],
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
+  },
   "scripts": {
-    "dev": "pnpm unbuild --stub",
-    "build": "pnpm unbuild",
-    "prepublishOnly": "npm run build",
-    "prepack": "pnpm unbuild"
+    "dev": "vite build --watch",
+    "build": "vite build && tsc -p tsconfig.build.json",
+    "prepublishOnly": "npm run build"
   },
-  "keywords": [
-    "vite",
-    "html",
-    "minify",
-    "vite-plugin"
-  ],
-  "author": "Vben",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/vbenjs/vite-plugin-html",
-    "directory": "packages/core"
-  },
-  "bugs": {
-    "url": "https://github.com/vbenjs/vite-plugin-html/issues"
-  },
-  "homepage": "https://github.com/vbenjs/vite-plugin-html/tree/master/#readme",
   "dependencies": {
-    "@rollup/pluginutils": "^4.2.0",
-    "colorette": "^2.0.16",
-    "connect-history-api-fallback": "^1.6.0",
-    "consola": "^2.15.3",
-    "dotenv": "^16.0.0",
-    "dotenv-expand": "^8.0.2",
-    "ejs": "^3.1.6",
-    "fast-glob": "^3.2.11",
-    "fs-extra": "^10.0.1",
-    "html-minifier-terser": "^6.1.0",
-    "node-html-parser": "^5.3.3",
-    "pathe": "^0.2.0"
-  },
-  "peerDependencies": {
-    "vite": ">=2.0.0"
+    "@rollup/pluginutils": "^5.4.0",
+    "connect-history-api-fallback": "^2.0.0",
+    "ejs": "^6.0.1",
+    "html-minifier-terser": "^7.2.0",
+    "node-html-parser": "^7.1.0",
+    "pathe": "^2.0.3",
+    "tinyglobby": "^0.2.17"
   },
   "devDependencies": {
-    "@babel/types": "^7.17.0",
-    "@types/ejs": "^3.1.0",
-    "@types/fs-extra": "^9.0.13",
-    "@types/html-minifier-terser": "^6.1.0",
-    "@types/node": "^17.0.21",
-    "typescript": "^4.6.2",
-    "vite": "^2.8.6"
+    "@types/ejs": "^3.1.5",
+    "@types/html-minifier-terser": "^7.0.2",
+    "@types/node": "^25.9.3",
+    "typescript": "^5.9.3",
+    "vite": "^8.0.16"
+  },
+  "peerDependencies": {
+    "vite": ">=5.0.0"
+  },
+  "engines": {
+    "node": ">=20.19"
   }
 }

@@ -1,4 +1,4 @@
-# vite-plugin-html
+# @easy-vite/plugin-html
 
 **中文** | [English](./README.md)
 
@@ -12,20 +12,26 @@
 - 支持自定义`entry`
 - 支持自定义`template`
 
-## 安装 (yarn or npm)
+## 安装 (pnpm or yarn or npm)
 
-**node version:** >=12.0.0
+**node version:** >=20.19
 
-**vite version:** >=2.0.0
+**vite version:** >=5.0.0
 
 ```bash
-yarn add vite-plugin-html -D
+pnpm add @easy-vite/plugin-html -D
 ```
 
 或
 
 ```bash
-npm i vite-plugin-html -D
+yarn add @easy-vite/plugin-html -D
+```
+
+或
+
+```bash
+npm i @easy-vite/plugin-html -D
 ```
 
 ## 使用
@@ -42,13 +48,12 @@ npm i vite-plugin-html -D
 </head>
 ```
 
-- 在 `vite.config.ts` 中配置,该方式可以按需引入需要的功能即可
+- 在 `vite.config.ts` 中配置，该方式可以按需引入需要的功能即可
 
 ```ts
-import { defineConfig, Plugin } from 'vite'
+import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-
-import { createHtmlPlugin } from 'vite-plugin-html'
+import { createHtmlPlugin } from '@easy-vite/plugin-html'
 
 export default defineConfig({
   plugins: [
@@ -65,7 +70,6 @@ export default defineConfig({
        * @default index.html
        */
       template: 'public/index.html',
-
       /**
        * 需要注入 index.html ejs 模版的数据
        */
@@ -78,9 +82,7 @@ export default defineConfig({
           {
             injectTo: 'body-prepend',
             tag: 'div',
-            attrs: {
-              id: 'tag',
-            },
+            attrs: { id: 'tag' },
           },
         ],
       },
@@ -93,7 +95,7 @@ export default defineConfig({
 
 ```ts
 import { defineConfig } from 'vite'
-import { createHtmlPlugin } from 'vite-plugin-html'
+import { createHtmlPlugin } from '@easy-vite/plugin-html'
 
 export default defineConfig({
   plugins: [
@@ -113,9 +115,7 @@ export default defineConfig({
               {
                 injectTo: 'body-prepend',
                 tag: 'div',
-                attrs: {
-                  id: 'tag1',
-                },
+                attrs: { id: 'tag1' },
               },
             ],
           },
@@ -133,9 +133,7 @@ export default defineConfig({
               {
                 injectTo: 'body-prepend',
                 tag: 'div',
-                attrs: {
-                  id: 'tag2',
-                },
+                attrs: { id: 'tag2' },
               },
             ],
           },
@@ -152,13 +150,13 @@ export default defineConfig({
 
 ### UserOptions
 
-| 参数     | 类型                     | 默认值        | 说明                            |
-| -------- | ------------------------ | ------------- | ------------------------------- |
-| entry    | `string`                 | `src/main.ts` | 入口文件                        |
-| template | `string`                 | `index.html`  | 模板的相对路径                  |
-| inject   | `InjectOptions`          | -             | 注入 HTML 的数据                |
-| minify   | `boolean｜MinifyOptions` | -             | 是否压缩 html                   |
-| pages    | `PageOption`             | -             | 多页配置                        |
+| 参数     | 类型                     | 默认值        | 说明             |
+| -------- | ------------------------ | ------------- | ---------------- |
+| entry    | `string`                 | `src/main.ts` | 入口文件         |
+| template | `string`                 | `index.html`  | 模板的相对路径   |
+| inject   | `InjectOptions`          | -             | 注入 HTML 的数据 |
+| minify   | `boolean｜MinifyOptions` | -             | 是否压缩 html    |
+| pages    | `PageOption`             | -             | 多页配置         |
 
 ### InjectOptions
 
@@ -188,42 +186,48 @@ export default defineConfig({
 默认压缩配置
 
 ```ts
-    collapseWhitespace: true,
-    keepClosingSlash: true,
-    removeComments: true,
-    removeRedundantAttributes: true,
-    removeScriptTypeAttributes: true,
-    removeStyleLinkTypeAttributes: true,
-    useShortDoctype: true,
-    minifyCSS: true,
+collapseWhitespace: true,
+keepClosingSlash: true,
+removeComments: true,
+removeRedundantAttributes: true,
+removeScriptTypeAttributes: true,
+removeStyleLinkTypeAttributes: true,
+useShortDoctype: true,
+minifyCSS: true,
 ```
 
-### 运行示例
+## 运行示例
 
 ```bash
 pnpm install
 
-# spa
-cd ./packages/playground/basic
+# spa — 自动构建 core（watch）并启动 playground 开发服务器
+pnpm dev:basic
 
-pnpm run dev
+# 多页
+pnpm dev:mpa
 
-# map
-cd ./packages/playground/mpa
-
-pnpm run dev
-
+# 自定义 entry / template
+pnpm dev:entry
 ```
 
-## 示例项目
+## 开发
 
-[Vben Admin](https://github.com/anncwb/vue-vben-admin)
+```bash
+pnpm install
+pnpm build:core # 构建插件（vite lib + tsc 类型声明）
+pnpm test       # 运行单元测试（vitest）
+pnpm lint       # 使用 oxlint 检查代码
+pnpm format     # 使用 oxfmt 格式化代码
+```
+
+> 需要 Node `>=20.19` 与 pnpm `>=10`。代码检查使用 [oxlint](https://oxc.rs/docs/learn-tutorial/about-linter/introduction.html)，格式化使用 [oxfmt](https://oxc.rs/docs/learn-tutorial/about-formatter/introduction.html)。
 
 ## License
 
 MIT
 
-[npm-img]: https://img.shields.io/npm/v/vite-plugin-html.svg
-[npm-url]: https://npmjs.com/package/vite-plugin-html
-[node-img]: https://img.shields.io/node/v/vite-plugin-html.svg
+[npm-img]: https://img.shields.io/npm/v/@easy-vite/plugin-html.svg
+[npm-url]: https://npmjs.com/package/@easy-vite/plugin-html
+[node-img]: https://img.shields.io/node/v/@easy-vite/plugin-html.svg
 [node-url]: https://nodejs.org/en/about/releases/
