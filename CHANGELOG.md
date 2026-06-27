@@ -1,3 +1,19 @@
+# [4.1.0] (2026-06-27)
+
+### Dependencies
+
+- 升级 `node-html-parser` 7.1.0 → 8.0.3（major，经全套测试与三个 playground 构建验证无 breaking）
+- 升级 `@types/node` 25.9.3 → 26.0.1（major）
+- 升级 `vite` 8.0.16 → 8.1.0
+- 升级 `oxlint` 1.70.0 → 1.71.0
+- 升级 `oxfmt` 0.55.0 → 0.56.0
+- 升级 `@commitlint/cli` 21.0.2 → 21.1.0
+- 升级 `@commitlint/config-conventional` 21.0.2 → 21.1.0
+- 升级 `axios` 1.18.0 → 1.18.1
+- 升级 `lint-staged` 17.0.7 → 17.0.8
+- 升级 `vue` 3.5.38 → 3.5.39
+- `typescript` 保留 5.9.3（暂不升级至 6.0）
+
 # [4.0.3] (2026-06-18)
 
 ### Bug Fixes
