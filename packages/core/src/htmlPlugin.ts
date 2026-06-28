@@ -7,7 +7,7 @@ import type { InjectOptions, PageOption, Pages, UserOptions } from './typing'
 import ejs from 'ejs'
 import { loadEnv, normalizePath } from 'vite'
 import { parse } from 'node-html-parser'
-import path from 'pathe'
+import path from 'node:path'
 import { glob } from 'tinyglobby'
 import history from 'connect-history-api-fallback'
 import { cp, readFile, rename, rm } from 'node:fs/promises'
@@ -203,6 +203,9 @@ export function createInput(
   { pages = [], template = DEFAULT_TEMPLATE }: UserOptions,
   viteConfig: ResolvedConfig,
 ) {
+  // The `config` hook runs before Vite assigns the default root, so
+  // viteConfig.root may be undefined here — fall back to cwd (Vite's default).
+  const root = viteConfig.root || process.cwd()
   const input: Record<string, string> = {}
   if (isMpa(viteConfig) || pages?.length) {
     const templates = pages.map((page) => page.template)
@@ -216,7 +219,7 @@ export function createInput(
         dirName === '.' || dirName === 'public' || !dirName
           ? file.replace(/\.html/, '')
           : dirName
-      input[key] = path.resolve(viteConfig.root, temp)
+      input[key] = path.resolve(root, temp)
     })
 
     return input
@@ -228,7 +231,7 @@ export function createInput(
       const file = path.basename(template)
       const key = file.replace(/\.html/, '')
       return {
-        [key]: path.resolve(viteConfig.root, template),
+        [key]: path.resolve(root, template),
       }
     }
   }

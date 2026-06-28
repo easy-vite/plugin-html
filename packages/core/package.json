@@ -1,6 +1,6 @@
 {
   "name": "@easy-vite/plugin-html",
-  "version": "4.1.0",
+  "version": "4.2.0",
   "description": "A plugin for vite to Minimize index.html and use lodash.template template syntax in index.html",
   "keywords": [
     "html",
@@ -42,12 +42,10 @@
     "prepublishOnly": "npm run build && cp ../../README.md ./README.md && cp ../../README.zh_CN.md ./README.zh_CN.md"
   },
   "dependencies": {
-    "@rollup/pluginutils": "^5.4.0",
     "connect-history-api-fallback": "^2.0.0",
     "ejs": "^6.0.1",
     "html-minifier-terser": "^7.2.0",
     "node-html-parser": "^8.0.3",
-    "pathe": "^2.0.3",
     "tinyglobby": "^0.2.17"
   },
   "devDependencies": {

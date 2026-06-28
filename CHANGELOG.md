@@ -1,3 +1,19 @@
+# [4.2.0] (2026-06-28)
+
+### Dependencies
+
+- 移除运行时依赖 `pathe`，改用 Node 内置 `node:path`
+- 移除运行时依赖 `@rollup/pluginutils`，`htmlFilter` 改用 `endsWith('.html')` 实现
+
+### Bug Fixes
+
+- 修复 `createInput` 在 `config` hook 阶段 `viteConfig.root` 为 undefined 时崩溃的问题（`pathe`→`node:path` 后暴露：node:path 对 undefined 参数严格校验，现回退到 `process.cwd()`）
+- `htmlFilter` 保留原 `createFilter` 的 dot:false 语义，排除以 `.` 开头的路径
+
+### Chores
+
+- 全仓版本同步至 4.2.0（monorepo 根包 3.2.1→4.2.0，playground 0.0.1→4.2.0）
+
 # [4.1.0] (2026-06-27)
 
 ### Dependencies

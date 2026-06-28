@@ -1,3 +1,2 @@
-import { createFilter } from '@rollup/pluginutils'
-
-export const htmlFilter = createFilter(['**/*.html'])
+export const htmlFilter = (fileName: string): boolean =>
+  fileName.endsWith('.html') && !fileName.startsWith('.')
