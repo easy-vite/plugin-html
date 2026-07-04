@@ -1,3 +1,16 @@
+# [4.2.1] (2026-06-28)
+
+### Dependencies
+
+- 升级 `node-html-parser` 8.0.3 → 8.0.4（运行时 patch）
+- 升级 `vite` 8.1.0 → 8.1.3、`@commitlint/cli` & `config-conventional` 21.1.0 → 21.2.0、`@types/node` 26.0.1 → 26.1.0、`oxlint` 1.71.0 → 1.72.0、`oxfmt` 0.56.0 → 0.57.0
+- 移除已弃用的 `conventional-changelog-cli` 及 `pnpm log` 脚本（CHANGELOG 现为手动维护）
+- `typescript` 保留 5.9.3
+
+### Chores
+
+- 全仓版本同步至 4.2.1
+
 # [4.2.0] (2026-06-28)
 
 ### Dependencies
