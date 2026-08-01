@@ -1,3 +1,21 @@
+# [4.2.2] (2026-08-01)
+
+### Dependencies
+
+- 升级 `node-html-parser` 8.0.4 → 9.0.1（major，运行时，经全套测试与三个 playground 构建验证无 breaking）
+- 升级 `vite` 8.1.3 → 8.2.0、`@types/node` 26.1.0 → 26.1.2、`@commitlint/cli` 21.2.0 → 21.2.1、`@vitejs/plugin-vue` 6.0.7 → 6.0.8、`vitest` 4.1.9 → 4.1.10
+- 升级 `vue` 3.5.39 → 3.5.40、`vue-router` 5.1.0 → 5.2.0、`axios` 1.18.1 → 1.19.0
+- 升级 `oxlint` 1.72.0 → 1.76.0、`oxfmt` 0.57.0 → 0.61.0、`lint-staged` 17.0.8 → 17.2.0
+- `typescript` 保留 5.9.3
+
+### Bug Fixes
+
+- 适配 `node-html-parser` 9.0 的类型收紧：`removeEntryScript` 中 `parentNode` 改用可选链调用（`parentNode?.removeChild`）
+
+### Chores
+
+- 全仓版本同步至 4.2.2
+
 # [4.2.1] (2026-06-28)
 
 ### Dependencies

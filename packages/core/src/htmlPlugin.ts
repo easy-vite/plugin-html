@@ -302,7 +302,8 @@ export function removeEntryScript(html: string, verbose = false) {
   const removedNode: string[] = []
   scriptNodes.forEach((item) => {
     removedNode.push(item.toString())
-    item.parentNode.removeChild(item)
+    // node-html-parser 9.0 tightened `parentNode` to `HTMLElement | null`
+    item.parentNode?.removeChild(item)
   })
   if (verbose && removedNode.length) {
     // oxlint-disable-next-line no-console -- intentional user-facing notice in verbose mode

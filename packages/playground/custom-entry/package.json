@@ -1,6 +1,6 @@
 {
   "name": "playground-entry",
-  "version": "4.2.1",
+  "version": "4.2.2",
   "private": true,
   "scripts": {
     "dev": "vite",
@@ -8,11 +8,11 @@
   },
   "dependencies": {
     "@easy-vite/plugin-html": "workspace:*",
-    "vue": "^3.5.39",
-    "vue-router": "^5.1.0"
+    "vue": "^3.5.40",
+    "vue-router": "^5.2.0"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^6.0.7",
-    "vite": "^8.1.3"
+    "@vitejs/plugin-vue": "^6.0.8",
+    "vite": "^8.2.0"
   }
 }
