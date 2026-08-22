@@ -1,3 +1,17 @@
+# [4.3.0] (2026-08-22)
+
+### Dependencies
+
+- 升级 `typescript` 5.9.3 → 6.0.3（major，dev 工具链；`tsc -p tsconfig.build.json` 类型声明生成验证无 breaking，产物大小与 4.2.2 一致）
+- 升级 `vite` 8.2.0 → 8.2.2、`vitest` 4.1.10 → 4.1.11、`@types/node` 26.1.2 → 26.2.0
+- 升级 `@commitlint/cli` 21.2.1 → 21.2.2、`@commitlint/config-conventional` 21.2.0 → 21.2.2
+- 升级 `vue` 3.5.40 → 3.5.41、`lint-staged` 17.2.0 → 17.3.0
+- 升级 `oxlint` 1.76.0 → 1.79.0、`oxfmt` 0.61.0 → 0.64.0
+
+### Chores
+
+- 全仓版本同步至 4.3.0
+
 # [4.2.2] (2026-08-01)
 
 ### Dependencies
