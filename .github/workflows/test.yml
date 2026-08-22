@@ -15,7 +15,10 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [20.x, 22.x, 24.x]
+        # pnpm 11 (see packageManager) requires Node >= 22.13, so 20.x cannot
+        # run the toolchain. Runtime compatibility with Node 20.19 is still
+        # guaranteed by `engines` in packages/core.
+        node-version: [22.x, 24.x]
         os: [ubuntu-latest]
       fail-fast: false
 
