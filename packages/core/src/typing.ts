@@ -6,7 +6,7 @@ export type Entry = string | Record<string, string>
 
 export interface InjectOptions {
   /**
-   *  @description Data injected into the html template
+   * @description Data injected into the html template
    */
   data?: Record<string, any>
 
@@ -22,7 +22,10 @@ export interface PageOption {
   filename: string
   template: string
   entry?: string
-  injectOptions?: InjectOptions
+  /**
+   * @description Inject options for this page
+   */
+  inject?: InjectOptions
 }
 
 export type Pages = PageOption[]
@@ -49,9 +52,18 @@ export interface UserOptions {
   template?: string
 
   /**
-   * @description inject options
+   * @description Inject options, applied to every rendered page.
+   * Page-level `inject` takes precedence over these keys.
    */
   inject?: InjectOptions
+
+  /**
+   * @description URL prefixes that bypass the dev-server history fallback.
+   * Requests whose path equals a prefix or starts with `<prefix>/` are
+   * passed through untouched instead of being rewritten to an HTML template.
+   * @default []
+   */
+  staticPathPrefixes?: string[]
 
   /**
    * output warning log

@@ -10,7 +10,7 @@ import { parse } from 'node-html-parser'
 import path from 'node:path'
 import { glob } from 'tinyglobby'
 import history from 'connect-history-api-fallback'
-import { cp, readFile, rename, rm } from 'node:fs/promises'
+import { cp, rename, rm } from 'node:fs/promises'
 import { isDirEmpty } from './utils'
 
 const DEFAULT_TEMPLATE = 'index.html'
@@ -40,6 +40,35 @@ async function moveFile(src: string, dest: string, options: MoveOptions = {}) {
   }
 }
 
+function escapeRegExp(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+/** Join a Vite base and a URL path: ('/app/', 'static/index.html') → '/app/static/index.html' */
+function joinUrlPath(base: string, p: string): string {
+  const b = base.endsWith('/') ? base.slice(0, -1) : base
+  return p.startsWith('/') ? `${b}${p}` : `${b}/${p}`
+}
+
+/** Strip the Vite base from a URL path: ('/app/static/a.js', '/app/') → '/static/a.js' */
+function stripBase(pathname: string, base: string): string {
+  if (base === '/' || base === '') {
+    return pathname
+  }
+  if (pathname === base) {
+    return '/'
+  }
+  return pathname.startsWith(base) ? pathname.slice(base.length - 1) : pathname
+}
+
+/** Match with a path boundary: prefix `/static` hits `/static` and `/static/…`, never `/staticfoo` */
+function matchesPathPrefix(pathname: string, prefixes: string[]): boolean {
+  return prefixes.some((raw) => {
+    const prefix = raw.startsWith('/') ? raw : `/${raw}`
+    return pathname === prefix || pathname.startsWith(`${prefix}/`)
+  })
+}
+
 export function createPlugin(userOptions: UserOptions = {}): PluginOption {
   const {
     entry,
@@ -54,21 +83,19 @@ export function createPlugin(userOptions: UserOptions = {}): PluginOption {
     html: string,
     ctx: IndexHtmlTransformContext,
   ) => {
-    const url = ctx.filename
-    const base = viteConfig.base
-    const excludeBaseUrl = url.replace(base, '/')
-    const htmlName = path.relative(process.cwd(), excludeBaseUrl)
-
-    const page = getPage(userOptions, htmlName, viteConfig)
-    const { injectOptions = {} } = page
+    // `ctx.filename` is the absolute path of the html file on disk — the only
+    // reliable page matcher regardless of base, root, and cwd (v5: was
+    // derived from the URL via `process.cwd()`, which broke when root ≠ cwd).
+    const page = getPage(userOptions, ctx.filename, viteConfig)
+    const { inject = {} } = page
     const _html = await renderHtml(html, {
-      injectOptions,
+      inject,
       viteConfig,
       env,
       entry: page.entry || entry,
       verbose,
     })
-    const { tags = [] } = injectOptions
+    const { tags = [] } = inject
     return {
       html: _html,
       tags: tags,
@@ -116,12 +143,21 @@ export function createPlugin(userOptions: UserOptions = {}): PluginOption {
       }
       const proxy = viteConfig.server?.proxy ?? {}
       const baseUrl = viteConfig.base ?? '/'
-      const keys = Object.keys(proxy)
+      const proxyUrlKeys = Object.keys(proxy)
+      const staticPathPrefixes = userOptions.staticPathPrefixes ?? []
 
       let indexPage: any = null
       for (const page of _pages) {
         if (page.filename !== 'index.html') {
-          rewrites.push(createRewire(page.template, page, baseUrl, keys))
+          rewrites.push(
+            createRewire(
+              page.template,
+              page,
+              baseUrl,
+              proxyUrlKeys,
+              staticPathPrefixes,
+            ),
+          )
         } else {
           indexPage = page
         }
@@ -129,12 +165,19 @@ export function createPlugin(userOptions: UserOptions = {}): PluginOption {
 
       // ensure order
       if (indexPage) {
-        rewrites.push(createRewire('', indexPage, baseUrl, keys))
+        rewrites.push(
+          createRewire(
+            '',
+            indexPage,
+            baseUrl,
+            proxyUrlKeys,
+            staticPathPrefixes,
+          ),
+        )
       }
 
       server.middlewares.use(
         history({
-          disableDotRule: undefined,
           htmlAcceptHeaders: ['text/html', 'application/xhtml+xml'],
           rewrites: rewrites,
         }),
@@ -162,6 +205,12 @@ export function createPlugin(userOptions: UserOptions = {}): PluginOption {
         }
       }
       const outputDirs = [...new Set(dirs)]
+
+      // SPA with a root-level template — nothing to move, skip early (v5)
+      if (!outputDirs.length) {
+        return
+      }
+
       const cwd = path.resolve(viteConfig.root, viteConfig.build.outDir)
       const htmlFiles = await glob(
         outputDirs.map((dir) => `${dir}/*.html`),
@@ -240,15 +289,15 @@ export function createInput(
 export async function renderHtml(
   html: string,
   config: {
-    injectOptions: InjectOptions
+    inject: InjectOptions
     viteConfig: ResolvedConfig
     env: Record<string, any>
     entry?: string
     verbose?: boolean
   },
 ) {
-  const { injectOptions, viteConfig, env, entry, verbose } = config
-  const { data, ejsOptions } = injectOptions
+  const { inject, viteConfig, env, entry, verbose } = config
+  const { data, ejsOptions } = inject
 
   const ejsData: Record<string, any> = {
     ...viteConfig?.env,
@@ -275,12 +324,12 @@ export async function renderHtml(
 
 export function getPage(
   { pages = [], entry, template = DEFAULT_TEMPLATE, inject = {} }: UserOptions,
-  name: string,
+  filename: string,
   viteConfig: ResolvedConfig,
 ) {
   let page: PageOption
   if (isMpa(viteConfig) || pages?.length) {
-    page = getPageConfig(name, pages, DEFAULT_TEMPLATE)
+    page = getPageConfig(filename, pages, DEFAULT_TEMPLATE, viteConfig, inject)
   } else {
     page = createSpaPage(entry, template, inject)
   }
@@ -299,6 +348,11 @@ export function removeEntryScript(html: string, verbose = false) {
 
   const root = parse(html)
   const scriptNodes = root.querySelectorAll('script[type=module]') || []
+  // Nothing to strip — return the original bytes untouched so the parser
+  // never gets a chance to re-serialize (and normalize) the document (v5).
+  if (!scriptNodes.length) {
+    return html
+  }
   const removedNode: string[] = []
   scriptNodes.forEach((item) => {
     removedNode.push(item.toString())
@@ -323,72 +377,72 @@ export function createSpaPage(
     entry,
     filename: 'index.html',
     template: template,
-    injectOptions: inject,
+    inject,
   }
 }
 
 export function getPageConfig(
-  htmlName: string,
+  filename: string,
   pages: Pages,
   defaultPage: string,
+  viteConfig: ResolvedConfig,
+  globalInject: InjectOptions = {},
 ): PageOption {
-  const defaultPageOption: PageOption = {
-    filename: defaultPage,
-    template: `./${defaultPage}`,
+  const root = viteConfig.root || process.cwd()
+  const normalizedFilename = normalizePath(filename)
+
+  const page = pages.find((page) => {
+    const templatePath = normalizePath(
+      path.resolve(root, page.template || DEFAULT_TEMPLATE),
+    )
+    return templatePath === normalizedFilename
+  })
+
+  if (page) {
+    return page
   }
 
-  const page = pages.filter((page) => {
-    return path.resolve('/' + page.template) === path.resolve('/' + htmlName)
-  })?.[0]
-  return page ?? defaultPageOption ?? undefined
-}
-
-export function getHtmlInPages(page: PageOption, root: string) {
-  const htmlPath = getHtmlPath(page, root)
-
-  return readHtml(htmlPath)
-}
-
-export function getHtmlPath(page: PageOption, root: string) {
-  const { template } = page
-  const templatePath = template.startsWith('.') ? template : `./${template}`
-  return path.resolve(root, templatePath)
-}
-
-export async function readHtml(path: string) {
-  try {
-    return await readFile(path, 'utf8')
-  } catch {
-    throw new Error(`html is not exist in ${path}`)
+  // Unknown page — fall back to the default template but keep the global
+  // inject so shared EJS data / tags still apply (v5: was silently dropped).
+  return {
+    filename: defaultPage,
+    template: `./${defaultPage}`,
+    inject: globalInject,
   }
 }
 
 function createRewire(
-  reg: string,
+  template: string,
   page: any,
   baseUrl: string,
   proxyUrlKeys: string[],
+  staticPathPrefixes: string[],
 ) {
   return {
-    from: new RegExp(`^/${reg}*`),
+    // Navigations that start with `/<template>` (respecting a path boundary)
+    // fall back to this page. An empty template matches every path — the
+    // catch-all rule registered for the index page (v5: the raw template
+    // string was interpolated unescaped and the `*` quantifier bound only
+    // to its last character, e.g. `^/index.html*`).
+    from: template ? new RegExp(`^/${escapeRegExp(template)}(/|$)`) : /^/,
     to({ parsedUrl }: any) {
-      const pathname: string = parsedUrl.path
+      const pathname: string = parsedUrl.path || '/'
 
-      const excludeBaseUrl = pathname.replace(baseUrl, '/')
-
-      const template = path.resolve(baseUrl, page.template)
-
-      if (excludeBaseUrl.startsWith('/static')) {
-        return excludeBaseUrl
+      // Configurable pass-through prefixes: return the original path, not
+      // the base-stripped one (v5: was a hardcoded '/static' check that
+      // leaked the stripped path and matched '/staticfoo').
+      if (matchesPathPrefix(stripBase(pathname, baseUrl), staticPathPrefixes)) {
+        return pathname
       }
 
-      if (excludeBaseUrl === '/') {
-        return template
+      if (pathname === baseUrl || stripBase(pathname, baseUrl) === '/') {
+        return joinUrlPath(baseUrl, page.template)
       }
-      const isApiUrl = proxyUrlKeys.some((item) =>
-        pathname.startsWith(path.resolve(baseUrl, item)),
+
+      const isProxyUrl = proxyUrlKeys.some((item) =>
+        pathname.startsWith(joinUrlPath(baseUrl, item)),
       )
-      return isApiUrl ? parsedUrl.path : template
+      return isProxyUrl ? pathname : joinUrlPath(baseUrl, page.template)
     },
   }
 }

@@ -73,6 +73,16 @@ importers:
         specifier: ^8.2.2
         version: 8.2.2(@types/node@26.2.0)(jiti@2.6.1)(terser@5.48.0)(yaml@2.9.0)
 
+  packages/playground/base:
+    dependencies:
+      '@easy-vite/plugin-html':
+        specifier: workspace:*
+        version: link:../../core
+    devDependencies:
+      vite:
+        specifier: ^8.2.2
+        version: 8.2.2(@types/node@26.2.0)(jiti@2.6.1)(terser@5.48.0)(yaml@2.9.0)
+
   packages/playground/basic:
     dependencies:
       '@easy-vite/plugin-html':

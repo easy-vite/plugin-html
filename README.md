@@ -125,7 +125,7 @@ export default defineConfig({
           entry: 'src/main.ts',
           filename: 'index.html',
           template: 'public/index.html',
-          injectOptions: {
+          inject: {
             data: {
               title: 'index',
               injectScript: `<script src="./inject.js"></script>`,
@@ -143,7 +143,7 @@ export default defineConfig({
           entry: 'src/other-main.ts',
           filename: 'other.html',
           template: 'public/other.html',
-          injectOptions: {
+          inject: {
             data: {
               title: 'other page',
               injectScript: `<script src="./inject.js"></script>`,
@@ -163,19 +163,53 @@ export default defineConfig({
 })
 ```
 
+## Migrating to v5
+
+v5 is a modernization release. It cleans up hidden behaviors and inconsistent naming, and ships a large test-suite expansion (10 → 37 tests, including end-to-end build/dev coverage).
+
+**Breaking changes**
+
+1. `PageOption.injectOptions` was renamed to `PageOption.inject` — the same name as the top-level option, so page-level and global configuration read alike:
+
+   ```diff
+   pages: [
+     {
+       filename: 'index.html',
+       template: 'index.html',
+   -   injectOptions: { data: { title: 'index' } },
+   +   inject: { data: { title: 'index' } },
+     },
+   ]
+   ```
+
+2. The dev-server history fallback no longer hardcodes `/static` as a pass-through prefix. If your templates live under `static/` (or you rely on any other prefix bypassing the fallback), list it explicitly:
+
+   ```diff
+   createHtmlPlugin({
+     template: 'static/index.html',
+   + staticPathPrefixes: ['/static'],
+   })
+   ```
+
+3. `getHtmlInPages` / `getHtmlPath` / `readHtml` (unused internal helpers that were accidentally exported) were removed from the public surface.
+
+**Bug fixes shipped in v5** (see [CHANGELOG](./CHANGELOG.md) for the full list): page matching now uses the vite `root` instead of `process.cwd()`; the MPA fallback page keeps the global `inject`; pass-through prefixes match with a path boundary (`/static` no longer swallows `/staticfoo`) and return the original request path; the fallback rewrite regex is properly escaped; html documents without module scripts are no longer re-serialized when an entry is configured.
+
 ## Parameter Description
 
 `createHtmlPlugin(options: UserOptions)`
 
 ### UserOptions
 
-| Parameter | Types                    | Default       | Description                   |
-| --------- | ------------------------ | ------------- | ----------------------------- |
-| entry     | `string`                 | `src/main.ts` | entry file path               |
-| template  | `string`                 | `index.html`  | relative path to the template |
-| inject    | `InjectOptions`          | -             | Data injected into HTML       |
-| minify    | `boolean｜MinifyOptions` | -             | whether to compress html      |
-| pages     | `PageOption`             | -             | Multi-page configuration      |
+| Parameter          | Types                    | Default       | Description                                                       |
+| ------------------ | ------------------------ | ------------- | ----------------------------------------------------------------- |
+| entry              | `string`                 | `src/main.ts` | entry file path                                                   |
+| template           | `string`                 | `index.html`  | relative path to the template                                     |
+| inject             | `InjectOptions`          | -             | Data injected into HTML                                           |
+| minify             | `boolean｜MinifyOptions` | -             | whether to compress html                                          |
+| pages              | `PageOption`             | -             | Multi-page configuration                                          |
+| staticPathPrefixes | `string[]`               | `[]`          | URL prefixes that bypass the dev-server history fallback          |
+| verbose            | `boolean`                | `false`       | output warning log (e.g. when template entry scripts are removed) |
 
 ### InjectOptions
 
@@ -191,14 +225,17 @@ export default defineConfig({
 
 By default, the contents of the `.env` file will be injected into index.html, similar to vite's `loadEnv` function
 
+> [!WARNING]
+> Every environment variable is injected (not only `VITE_*`-prefixed ones). Be careful not to render secrets into your HTML with `<%- %>` — treat `inject.data` as the safer, explicit channel.
+
 ### PageOption
 
-| Parameter     | Types           | Default       | Description                   |
-| ------------- | --------------- | ------------- | ----------------------------- |
-| filename      | `string`        | -             | html file name                |
-| template      | `string`        | `index.html`  | relative path to the template |
-| entry         | `string`        | `src/main.ts` | entry file path               |
-| injectOptions | `InjectOptions` | -             | Data injected into HTML       |
+| Parameter | Types           | Default       | Description                   |
+| --------- | --------------- | ------------- | ----------------------------- |
+| filename  | `string`        | -             | html file name                |
+| template  | `string`        | `index.html`  | relative path to the template |
+| entry     | `string`        | `src/main.ts` | entry file path               |
+| inject    | `InjectOptions` | -             | Data injected into HTML       |
 
 ### MinifyOptions
 
@@ -228,6 +265,9 @@ pnpm dev:mpa
 
 # Custom entry / template
 pnpm dev:entry
+
+# Non-root base (served under /app/)
+pnpm dev:base
 ```
 
 ## Development

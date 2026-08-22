@@ -10,7 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `pnpm test --run --reporter=verbose packages/core/src/__tests__/html.spec.ts` — run a single test file
 - `pnpm lint` / `pnpm lint:fix` — lint with oxlint (not eslint)
 - `pnpm format` / `pnpm format:check` — format with oxfmt (not prettier)
-- `pnpm dev:basic` / `pnpm dev:mpa` / `pnpm dev:entry` — build core in watch mode + start a playground dev server
+- `pnpm dev:basic` / `pnpm dev:mpa` / `pnpm dev:entry` / `pnpm dev:base` — build core in watch mode + start a playground dev server
 
 ## Architecture
 
@@ -31,7 +31,8 @@ packages/
   playground/
     basic/                  # SPA playground (Vue + vue-router)
     mpa/                    # Multi-page app playground
-    custom-entry/           # Custom entry/template playground
+    custom-entry/           # Custom entry/template playground (staticPathPrefixes demo)
+    base/                   # Non-root base ('/app/') playground (vanilla)
 ```
 
 ### Plugin design

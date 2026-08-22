@@ -1,6 +1,6 @@
 {
   "name": "@easy-vite/plugin-html-monorepo",
-  "version": "4.3.0",
+  "version": "5.0.0",
   "private": true,
   "homepage": "https://github.com/easy-vite/plugin-html/tree/master/#readme",
   "bugs": {
@@ -17,6 +17,7 @@
     "dev:basic": "pnpm build:core && pnpm --parallel --filter @easy-vite/plugin-html --filter playground-basic run dev",
     "dev:mpa": "pnpm build:core && pnpm --parallel --filter @easy-vite/plugin-html --filter playground-map run dev",
     "dev:entry": "pnpm build:core && pnpm --parallel --filter @easy-vite/plugin-html --filter playground-entry run dev",
+    "dev:base": "pnpm build:core && pnpm --parallel --filter @easy-vite/plugin-html --filter playground-base run dev",
     "lint": "oxlint .",
     "lint:fix": "oxlint . --fix",
     "format": "oxfmt .",

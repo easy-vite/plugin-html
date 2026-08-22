@@ -1,3 +1,34 @@
+# [5.0.0] (2026-08-22)
+
+### ⚠ BREAKING CHANGES
+
+- `PageOption.injectOptions` 更名为 `PageOption.inject`，与顶层选项命名统一
+- dev server history fallback 移除硬编码的 `/static` 透传前缀，改为可配置的 `staticPathPrefixes`（默认 `[]`）；模板位于 `static/` 目录的用户需显式声明 `staticPathPrefixes: ['/static']`
+- 移除被意外导出的内部工具函数 `getHtmlInPages` / `getHtmlPath` / `readHtml`
+
+### Features
+
+- 新增 `UserOptions.staticPathPrefixes`：声明绕过 dev history fallback 的 URL 前缀，按路径边界匹配（`/static` 匹配 `/static` 与 `/static/…`，不再误吞 `/staticfoo`），命中时返回原始请求路径（原实现泄漏 base 剥离后的路径）
+- 测试从 10 个扩展到 37 个：新增 `createInput`（含 v4.2.0 root undefined 回归）、`removeEntryScript`、`getPage`/`getPageConfig` 单测，以及基于 Vite build/dev API 的端到端测试（SPA entry 注入、非 `/` base、MPA 多页、子目录模板回移、staticPathPrefixes 透传对照）
+- 新增 `playground/base` 演示非根 `base: '/app/'` 场景（dev 与 build 下 entry 注入均正确携带 base 前缀，由 Vite 管线处理）
+- `package.json`：description 修正为 EJS（原文案误写 lodash.template）；`exports` 补充 `./package.json` 子路径；keywords 补充 `ejs`/`template`/`mpa`/`multi-page`
+
+### Bug Fixes
+
+- 页面匹配改用 `viteConfig.root` 解析（原为 `process.cwd()` 推导 URL 路径，root ≠ cwd 时 MPA 页面配置静默失配）
+- MPA 回退页保留顶层 `inject` 配置（原静默丢失 EJS 数据与 tags）
+- dev fallback 重写正则正确转义模板路径中的正则特殊字符，并修复量词错位（`^/<template>*` 的 `*` 只作用于最后一个字符）
+- `removeEntryScript` 在文档不含 `script[type=module]` 时直接返回原文，不再经 parse → serialize 往返（避免 HTML 被重新规范化）
+- `closeBundle` 在无子目录模板时（SPA 根目录场景）提前返回，跳过无谓的 glob 与目录清理
+
+### Documentation
+
+- README 中英双语：新增「升级到 v5」迁移指南；`staticPathPrefixes` / `verbose` 参数说明；env 注入安全提示（全量环境变量注入的风险）
+
+### Chores
+
+- 全仓版本同步至 5.0.0；CI 测试矩阵扩展至 Node 20 / 22 / 24
+
 # [4.3.0] (2026-08-22)
 
 ### Dependencies

@@ -125,7 +125,7 @@ export default defineConfig({
           entry: 'src/main.ts',
           filename: 'index.html',
           template: 'public/index.html',
-          injectOptions: {
+          inject: {
             data: {
               title: 'index',
               injectScript: `<script src="./inject.js"></script>`,
@@ -143,7 +143,7 @@ export default defineConfig({
           entry: 'src/other-main.ts',
           filename: 'other.html',
           template: 'public/other.html',
-          injectOptions: {
+          inject: {
             data: {
               title: 'other page',
               injectScript: `<script src="./inject.js"></script>`,
@@ -163,19 +163,53 @@ export default defineConfig({
 })
 ```
 
+## 升级到 v5
+
+v5 是一次现代化重构：清理了隐式行为与命名不一致，并大幅扩充测试（10 → 37 个，新增端到端 build/dev 覆盖）。
+
+**Breaking Changes**
+
+1. `PageOption.injectOptions` 更名为 `PageOption.inject` —— 与顶层选项同名，页面级与全局配置写法保持一致：
+
+   ```diff
+   pages: [
+     {
+       filename: 'index.html',
+       template: 'index.html',
+   -   injectOptions: { data: { title: 'index' } },
+   +   inject: { data: { title: 'index' } },
+     },
+   ]
+   ```
+
+2. dev server 的 history fallback 不再将 `/static` 硬编码为透传前缀。若你的模板位于 `static/` 目录（或依赖任何前缀绕过 fallback），请显式声明：
+
+   ```diff
+   createHtmlPlugin({
+     template: 'static/index.html',
+   + staticPathPrefixes: ['/static'],
+   })
+   ```
+
+3. 移除了 `getHtmlInPages` / `getHtmlPath` / `readHtml`（被意外导出的内部工具函数）。
+
+**v5 修复的问题**（完整列表见 [CHANGELOG](./CHANGELOG.md)）：页面匹配改用 vite `root`（原为 `process.cwd()`）；MPA 回退页保留全局 `inject`；透传前缀按路径边界匹配（`/static` 不再吞掉 `/staticfoo`）且返回原始请求路径；fallback 重写正则正确转义；配置了 entry 但文档中没有 module script 时不再重新序列化 HTML。
+
 ## 参数说明
 
 `createHtmlPlugin(options: UserOptions)`
 
 ### UserOptions
 
-| 参数     | 类型                     | 默认值        | 说明             |
-| -------- | ------------------------ | ------------- | ---------------- |
-| entry    | `string`                 | `src/main.ts` | 入口文件         |
-| template | `string`                 | `index.html`  | 模板的相对路径   |
-| inject   | `InjectOptions`          | -             | 注入 HTML 的数据 |
-| minify   | `boolean｜MinifyOptions` | -             | 是否压缩 html    |
-| pages    | `PageOption`             | -             | 多页配置         |
+| 参数               | 类型                     | 默认值        | 说明                                         |
+| ------------------ | ------------------------ | ------------- | -------------------------------------------- |
+| entry              | `string`                 | `src/main.ts` | 入口文件                                     |
+| template           | `string`                 | `index.html`  | 模板的相对路径                               |
+| inject             | `InjectOptions`          | -             | 注入 HTML 的数据                             |
+| minify             | `boolean｜MinifyOptions` | -             | 是否压缩 html                                |
+| pages              | `PageOption`             | -             | 多页配置                                     |
+| staticPathPrefixes | `string[]`               | `[]`          | 绕过 dev server history fallback 的 URL 前缀 |
+| verbose            | `boolean`                | `false`       | 输出警告日志（如模板 entry 脚本被移除时）    |
 
 ### InjectOptions
 
@@ -191,14 +225,17 @@ export default defineConfig({
 
 默认会向 index.html 注入 `.env` 文件的内容，类似 vite 的 `loadEnv`函数
 
+> [!WARNING]
+> 注入的是**全部**环境变量（不限于 `VITE_` 前缀）。请勿用 `<%- %>` 将密钥渲染进 HTML —— 更安全的做法是通过 `inject.data` 显式传入。
+
 ### PageOption
 
-| 参数          | 类型            | 默认值        | 说明             |
-| ------------- | --------------- | ------------- | ---------------- |
-| filename      | `string`        | -             | html 文件名      |
-| template      | `string`        | `index.html`  | 模板的相对路径   |
-| entry         | `string`        | `src/main.ts` | 入口文件         |
-| injectOptions | `InjectOptions` | -             | 注入 HTML 的数据 |
+| 参数     | 类型            | 默认值        | 说明             |
+| -------- | --------------- | ------------- | ---------------- |
+| filename | `string`        | -             | html 文件名      |
+| template | `string`        | `index.html`  | 模板的相对路径   |
+| entry    | `string`        | `src/main.ts` | 入口文件         |
+| inject   | `InjectOptions` | -             | 注入 HTML 的数据 |
 
 ### MinifyOptions
 
@@ -228,6 +265,9 @@ pnpm dev:mpa
 
 # 自定义 entry / template
 pnpm dev:entry
+
+# 非 / 根路径 base（部署在 /app/ 下）
+pnpm dev:base
 ```
 
 ## 开发
