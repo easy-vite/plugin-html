@@ -150,13 +150,7 @@ export function createPlugin(userOptions: UserOptions = {}): PluginOption {
       for (const page of _pages) {
         if (page.filename !== 'index.html') {
           rewrites.push(
-            createRewire(
-              page.template,
-              page,
-              baseUrl,
-              proxyUrlKeys,
-              staticPathPrefixes,
-            ),
+            createRewire(page, baseUrl, proxyUrlKeys, staticPathPrefixes),
           )
         } else {
           indexPage = page
@@ -166,13 +160,9 @@ export function createPlugin(userOptions: UserOptions = {}): PluginOption {
       // ensure order
       if (indexPage) {
         rewrites.push(
-          createRewire(
-            '',
-            indexPage,
-            baseUrl,
-            proxyUrlKeys,
-            staticPathPrefixes,
-          ),
+          createRewire(indexPage, baseUrl, proxyUrlKeys, staticPathPrefixes, {
+            catchAll: true,
+          }),
         )
       }
 
@@ -412,19 +402,21 @@ export function getPageConfig(
 }
 
 function createRewire(
-  template: string,
-  page: any,
+  page: { filename: string; template: string },
   baseUrl: string,
   proxyUrlKeys: string[],
   staticPathPrefixes: string[],
+  { catchAll = false }: { catchAll?: boolean } = {},
 ) {
+  // A page is reachable both at its short filename URL (`/other.html`) and
+  // at its full template path (`/public/other.html`). Matching the template
+  // path only (as ≤ v5.0.0 did) let short URLs fall through to the index
+  // page — the issue #1 "template has no effect" symptom.
+  const prefixes = [
+    ...new Set([page.filename, page.template].filter(Boolean) as string[]),
+  ].map((p) => `/${escapeRegExp(p)}`)
   return {
-    // Navigations that start with `/<template>` (respecting a path boundary)
-    // fall back to this page. An empty template matches every path — the
-    // catch-all rule registered for the index page (v5: the raw template
-    // string was interpolated unescaped and the `*` quantifier bound only
-    // to its last character, e.g. `^/index.html*`).
-    from: template ? new RegExp(`^/${escapeRegExp(template)}(/|$)`) : /^/,
+    from: catchAll ? /^/ : new RegExp(`^(?:${prefixes.join('|')})(/|$)`),
     to({ parsedUrl }: any) {
       const pathname: string = parsedUrl.path || '/'
 

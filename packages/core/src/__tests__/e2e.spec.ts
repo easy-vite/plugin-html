@@ -178,6 +178,43 @@ describe('e2e: dev server', () => {
     expect(srcRes.status).toEqual(200)
   }, 20_000)
 
+  test('serves the right MPA page at its short filename URL (issue #1)', async () => {
+    const root = await makeFixture({
+      'index.html':
+        '<html><head><title>home</title></head><body>home</body></html>',
+      'other.html':
+        '<html><head><title>other</title></head><body>other</body></html>',
+    })
+    const server = await createServer({
+      root,
+      logLevel: 'error',
+      plugins: [
+        createHtmlPlugin({
+          pages: [
+            { filename: 'index.html', template: 'index.html' },
+            { filename: 'other.html', template: 'other.html' },
+          ],
+        }),
+      ],
+    })
+    devServers.push(server)
+    await server.listen(0)
+    const port = server.httpServer.address().port
+
+    // the short filename URL must reach its own page, not fall back to the
+    // index page's catch-all rule (v5.0.0 matched the template path only,
+    // so `/other.html` served the index template's content)
+    const home = await fetch(`http://localhost:${port}/`, {
+      headers: { accept: 'text/html' },
+    })
+    expect(await home.text()).toContain('home')
+
+    const other = await fetch(`http://localhost:${port}/other.html`, {
+      headers: { accept: 'text/html' },
+    })
+    expect(await other.text()).toContain('other')
+  }, 20_000)
+
   test('staticPathPrefixes pass real files through instead of falling back', async () => {
     const root = await makeFixture({
       'index.html': SPA_HTML,

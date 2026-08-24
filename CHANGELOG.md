@@ -1,3 +1,10 @@
+# [5.0.1] (2026-08-24)
+
+### Bug Fixes
+
+- 修复 MPA dev server 下以短文件名 URL（如 `/other.html`）访问非 index 页时被 index 页 catch-all 规则吞掉的问题：rewrite 规则现同时匹配 `filename` 短路径与 `template` 完整路径（issue #1 的"template 无效"症状，v5.0.0 仅匹配 template 路径）
+- 新增 e2e 回归测试：dev 下 `/other.html` 必须渲染 other 页
+
 # [5.0.0] (2026-08-22)
 
 ### ⚠ BREAKING CHANGES

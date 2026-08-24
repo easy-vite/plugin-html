@@ -1,6 +1,6 @@
 {
   "name": "@easy-vite/plugin-html-monorepo",
-  "version": "5.0.0",
+  "version": "5.0.1",
   "private": true,
   "homepage": "https://github.com/easy-vite/plugin-html/tree/master/#readme",
   "bugs": {
