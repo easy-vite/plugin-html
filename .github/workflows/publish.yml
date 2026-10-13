@@ -34,6 +34,7 @@ jobs:
         run: pnpm build:core
 
       - name: Publish to npm
+        # Auth is handled by npm Trusted Publishing (OIDC): the `id-token: write`
+        # permission above lets pnpm exchange a short-lived credential, so no
+        # long-lived NPM_TOKEN secret is required.
         run: pnpm publish --access public --no-git-checks --provenance --filter @easy-vite/plugin-html
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
