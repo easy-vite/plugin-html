@@ -1,8 +1,4 @@
-import type {
-  IndexHtmlTransformContext,
-  PluginOption,
-  ResolvedConfig,
-} from 'vite'
+import type { IndexHtmlTransformContext, PluginOption, ResolvedConfig } from 'vite'
 import type { InjectOptions, PageOption, Pages, UserOptions } from './typing'
 import ejs from 'ejs'
 import { loadEnv, normalizePath } from 'vite'
@@ -22,18 +18,40 @@ interface MoveOptions {
   overwrite?: boolean
 }
 
+/** The subset of `url.parse(req.url)` that the rewrite rules read. */
+interface RewriteContext {
+  parsedUrl: {
+    path?: string | null
+  }
+}
+
+/** One `connect-history-api-fallback` rewrite rule. */
+interface RewriteRule {
+  from: RegExp
+  to: (ctx: RewriteContext) => string
+}
+
 async function moveFile(src: string, dest: string, options: MoveOptions = {}) {
   try {
     await rename(src, dest)
   } catch (err) {
     const code = (err as NodeJS.ErrnoException).code
     if (code === 'ENOTEMPTY' && options.overwrite) {
-      await rm(dest, { recursive: true, force: true })
+      await rm(dest, {
+        recursive: true,
+        force: true,
+      })
       await rename(src, dest)
     } else if (code === 'EXDEV') {
       // cross-device rename fallback: copy then remove source
-      await cp(src, dest, { recursive: true, force: options.overwrite })
-      await rm(src, { recursive: true, force: true })
+      await cp(src, dest, {
+        recursive: true,
+        force: options.overwrite,
+      })
+      await rm(src, {
+        recursive: true,
+        force: true,
+      })
     } else {
       throw err
     }
@@ -70,19 +88,11 @@ function matchesPathPrefix(pathname: string, prefixes: string[]): boolean {
 }
 
 export function createPlugin(userOptions: UserOptions = {}): PluginOption {
-  const {
-    entry,
-    template = DEFAULT_TEMPLATE,
-    pages = [],
-    verbose = false,
-  } = userOptions
+  const { entry, template = DEFAULT_TEMPLATE, pages = [], verbose = false } = userOptions
 
   let viteConfig: ResolvedConfig
-  let env: Record<string, any> = {}
-  const transformIndexHtmlHandler = async (
-    html: string,
-    ctx: IndexHtmlTransformContext,
-  ) => {
+  let env: Record<string, unknown> = {}
+  const transformIndexHtmlHandler = async (html: string, ctx: IndexHtmlTransformContext) => {
     // `ctx.filename` is the absolute path of the html file on disk — the only
     // reliable page matcher regardless of base, root, and cwd (v5: was
     // derived from the URL via `process.cwd()`, which broke when root ≠ cwd).
@@ -98,7 +108,7 @@ export function createPlugin(userOptions: UserOptions = {}): PluginOption {
     const { tags = [] } = inject
     return {
       html: _html,
-      tags: tags,
+      tags,
     }
   }
 
@@ -124,8 +134,11 @@ export function createPlugin(userOptions: UserOptions = {}): PluginOption {
     },
 
     configureServer(server) {
-      let _pages: { filename: string; template: string }[] = []
-      const rewrites: { from: RegExp; to: any }[] = []
+      let _pages: {
+        filename: string
+        template: string
+      }[] = []
+      const rewrites: RewriteRule[] = []
       if (!isMpa(viteConfig)) {
         const template = userOptions.template || DEFAULT_TEMPLATE
         const filename = DEFAULT_TEMPLATE
@@ -146,12 +159,13 @@ export function createPlugin(userOptions: UserOptions = {}): PluginOption {
       const proxyUrlKeys = Object.keys(proxy)
       const staticPathPrefixes = userOptions.staticPathPrefixes ?? []
 
-      let indexPage: any = null
+      let indexPage: {
+        filename: string
+        template: string
+      } | null = null
       for (const page of _pages) {
         if (page.filename !== 'index.html') {
-          rewrites.push(
-            createRewire(page, baseUrl, proxyUrlKeys, staticPathPrefixes),
-          )
+          rewrites.push(createRewire(page, baseUrl, proxyUrlKeys, staticPathPrefixes))
         } else {
           indexPage = page
         }
@@ -169,7 +183,7 @@ export function createPlugin(userOptions: UserOptions = {}): PluginOption {
       server.middlewares.use(
         history({
           htmlAcceptHeaders: ['text/html', 'application/xhtml+xml'],
-          rewrites: rewrites,
+          rewrites,
         }),
       )
     },
@@ -204,7 +218,10 @@ export function createPlugin(userOptions: UserOptions = {}): PluginOption {
       const cwd = path.resolve(viteConfig.root, viteConfig.build.outDir)
       const htmlFiles = await glob(
         outputDirs.map((dir) => `${dir}/*.html`),
-        { cwd, absolute: true },
+        {
+          cwd,
+          absolute: true,
+        },
       )
 
       // move sequentially, dedup by dest to avoid concurrent rename races
@@ -217,7 +234,9 @@ export function createPlugin(userOptions: UserOptions = {}): PluginOption {
         }
       }
       for (const [dest, src] of moves) {
-        await moveFile(src, dest, { overwrite: true })
+        await moveFile(src, dest, {
+          overwrite: true,
+        })
       }
 
       // clean empty dirs deepest-first so a parent is only removed after
@@ -228,7 +247,10 @@ export function createPlugin(userOptions: UserOptions = {}): PluginOption {
       for (const absDir of absDirs) {
         try {
           if (await isDirEmpty(absDir)) {
-            await rm(absDir, { recursive: true, force: true })
+            await rm(absDir, {
+              recursive: true,
+              force: true,
+            })
           }
         } catch (err) {
           if ((err as NodeJS.ErrnoException).code !== 'ENOENT') throw err
@@ -255,9 +277,7 @@ export function createInput(
       dirName = dirName.replace(/\s+/g, '').replace(/\//g, '-')
 
       const key =
-        dirName === '.' || dirName === 'public' || !dirName
-          ? file.replace(/\.html/, '')
-          : dirName
+        dirName === '.' || dirName === 'public' || !dirName ? file.replace(/\.html/, '') : dirName
       input[key] = path.resolve(root, temp)
     })
 
@@ -281,7 +301,7 @@ export async function renderHtml(
   config: {
     inject: InjectOptions
     viteConfig: ResolvedConfig
-    env: Record<string, any>
+    env: Record<string, unknown>
     entry?: string
     verbose?: boolean
   },
@@ -289,7 +309,7 @@ export async function renderHtml(
   const { inject, viteConfig, env, entry, verbose } = config
   const { data, ejsOptions } = inject
 
-  const ejsData: Record<string, any> = {
+  const ejsData: Record<string, unknown> = {
     ...viteConfig?.env,
     ...viteConfig?.define,
     ...env,
@@ -299,14 +319,10 @@ export async function renderHtml(
 
   if (entry) {
     result = removeEntryScript(result, verbose)
-    const entrySrc = entry.startsWith('/')
-      ? entry
-      : `/${entry.replace(/^\.?\//, '')}`
+    const entrySrc = entry.startsWith('/') ? entry : `/${entry.replace(/^\.?\//, '')}`
     result = result.replace(
       bodyInjectRE,
-      `<script type="module" src="${normalizePath(
-        entrySrc,
-      )}"></script>\n</body>`,
+      `<script type="module" src="${normalizePath(entrySrc)}"></script>\n</body>`,
     )
   }
   return result
@@ -366,7 +382,7 @@ export function createSpaPage(
   return {
     entry,
     filename: 'index.html',
-    template: template,
+    template,
     inject,
   }
 }
@@ -382,9 +398,7 @@ export function getPageConfig(
   const normalizedFilename = normalizePath(filename)
 
   const page = pages.find((page) => {
-    const templatePath = normalizePath(
-      path.resolve(root, page.template || DEFAULT_TEMPLATE),
-    )
+    const templatePath = normalizePath(path.resolve(root, page.template || DEFAULT_TEMPLATE))
     return templatePath === normalizedFilename
   })
 
@@ -402,22 +416,29 @@ export function getPageConfig(
 }
 
 function createRewire(
-  page: { filename: string; template: string },
+  page: {
+    filename: string
+    template: string
+  },
   baseUrl: string,
   proxyUrlKeys: string[],
   staticPathPrefixes: string[],
-  { catchAll = false }: { catchAll?: boolean } = {},
-) {
+  {
+    catchAll = false,
+  }: {
+    catchAll?: boolean
+  } = {},
+): RewriteRule {
   // A page is reachable both at its short filename URL (`/other.html`) and
   // at its full template path (`/public/other.html`). Matching the template
   // path only (as ≤ v5.0.0 did) let short URLs fall through to the index
   // page — the issue #1 "template has no effect" symptom.
-  const prefixes = [
-    ...new Set([page.filename, page.template].filter(Boolean) as string[]),
-  ].map((p) => `/${escapeRegExp(p)}`)
+  const prefixes = [...new Set([page.filename, page.template].filter(Boolean) as string[])].map(
+    (p) => `/${escapeRegExp(p)}`,
+  )
   return {
     from: catchAll ? /^/ : new RegExp(`^(?:${prefixes.join('|')})(/|$)`),
-    to({ parsedUrl }: any) {
+    to({ parsedUrl }: RewriteContext) {
       const pathname: string = parsedUrl.path || '/'
 
       // Configurable pass-through prefixes: return the original path, not

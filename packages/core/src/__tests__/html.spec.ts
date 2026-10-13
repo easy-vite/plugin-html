@@ -3,7 +3,9 @@ import { describe, test, expect } from 'vitest'
 
 const createVitePlugin = () => {
   const { name } = createPlugin()
-  return { name }
+  return {
+    name,
+  }
 }
 
 describe('html plugin test.', () => {
@@ -16,14 +18,21 @@ describe('html plugin test.', () => {
 describe('function test.', () => {
   test('createSpaPage function test.', async () => {
     const page = createSpaPage('main.ts', 'public/index.html', {
-      data: { a: '1' },
+      data: {
+        a: '1',
+      },
       ejsOptions: {},
     })
     expect(page).toEqual({
       filename: 'index.html',
       template: 'public/index.html',
       entry: 'main.ts',
-      inject: { data: { a: '1' }, ejsOptions: {} },
+      inject: {
+        data: {
+          a: '1',
+        },
+        ejsOptions: {},
+      },
     })
   })
 
@@ -45,7 +54,9 @@ describe('function test.', () => {
 `,
       {
         inject: {
-          data: { title: 'test-title' },
+          data: {
+            title: 'test-title',
+          },
         },
         viteConfig: {} as any,
         env: {
@@ -79,9 +90,7 @@ describe('function test.', () => {
         entry: 'src/main.ts',
       },
     )
-    expect(content).toContain(
-      '<script type="module" src="/src/main.ts"></script>\n</body>',
-    )
+    expect(content).toContain('<script type="module" src="/src/main.ts"></script>\n</body>')
   })
 
   test('renderHtml strips leading ./ from entry.', async () => {
@@ -106,9 +115,15 @@ describe('function test.', () => {
 
   test('page-level data takes precedence over env.', async () => {
     const content = await renderHtml('<%- title %>', {
-      inject: { data: { title: 'page' } },
+      inject: {
+        data: {
+          title: 'page',
+        },
+      },
       viteConfig: {} as any,
-      env: { title: 'env' },
+      env: {
+        title: 'env',
+      },
     })
     expect(content).toEqual('page')
   })

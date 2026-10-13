@@ -3,7 +3,10 @@ import { describe, test, expect } from 'vitest'
 
 const createVitePlugin = () => {
   const { name, generateBundle } = createMinifyHtmlPlugin()
-  return { name, generateBundle }
+  return {
+    name,
+    generateBundle,
+  }
 }
 
 describe('minify html plugin test.', () => {
@@ -77,9 +80,7 @@ div {
 `,
       true,
     )
-    expect(ret).toEqual(
-      `<!doctype html><html><style>div{color:red}</style></html>`,
-    )
+    expect(ret).toEqual(`<!doctype html><html><style>div{color:red}</style></html>`)
   })
 
   test('custom minify options.', async () => {
@@ -93,7 +94,9 @@ div {
 </style>
 </html>
 `,
-      { minifyCSS: true },
+      {
+        minifyCSS: true,
+      },
     )
     expect(ret).toEqual(`<!DOCTYPE html>
 <html>

@@ -3,7 +3,14 @@ import { describe, test, expect } from 'vitest'
 import path from 'node:path'
 
 const makeConfig = (input: Record<string, string>, root = '/root') =>
-  ({ root, build: { rollupOptions: { input } } }) as any
+  ({
+    root,
+    build: {
+      rollupOptions: {
+        input,
+      },
+    },
+  }) as any
 
 describe('getPage test.', () => {
   test('SPA returns a page wired to the global inject.', () => {
@@ -11,16 +18,26 @@ describe('getPage test.', () => {
       {
         entry: 'src/main.ts',
         template: 'index.html',
-        inject: { data: { a: 1 } },
+        inject: {
+          data: {
+            a: 1,
+          },
+        },
       },
       '/root/index.html',
-      makeConfig({ index: '/root/index.html' }),
+      makeConfig({
+        index: '/root/index.html',
+      }),
     )
     expect(page).toEqual({
       entry: 'src/main.ts',
       filename: 'index.html',
       template: 'index.html',
-      inject: { data: { a: 1 } },
+      inject: {
+        data: {
+          a: 1,
+        },
+      },
     })
   })
 })
@@ -30,9 +47,16 @@ describe('getPageConfig test.', () => {
     {
       filename: 'index.html',
       template: 'index.html',
-      inject: { data: { page: 'home' } },
+      inject: {
+        data: {
+          page: 'home',
+        },
+      },
     },
-    { filename: 'other.html', template: 'sub/other.html' },
+    {
+      filename: 'other.html',
+      template: 'sub/other.html',
+    },
   ]
 
   test('matches a page by resolving its template against the vite root.', () => {
@@ -40,7 +64,10 @@ describe('getPageConfig test.', () => {
       path.join('/root', 'sub/other.html'),
       pages,
       'index.html',
-      makeConfig({ index: '/root/index.html', other: '/root/sub/other.html' }),
+      makeConfig({
+        index: '/root/index.html',
+        other: '/root/sub/other.html',
+      }),
     )
     expect(page.template).toEqual('sub/other.html')
   })
@@ -54,13 +81,26 @@ describe('getPageConfig test.', () => {
         {
           filename: 'other.html',
           template: 'sub/other.html',
-          inject: { data: { page: 'other' } },
+          inject: {
+            data: {
+              page: 'other',
+            },
+          },
         },
       ],
       'index.html',
-      makeConfig({ other: '/elsewhere/sub/other.html' }, '/elsewhere'),
+      makeConfig(
+        {
+          other: '/elsewhere/sub/other.html',
+        },
+        '/elsewhere',
+      ),
     )
-    expect(page.inject).toEqual({ data: { page: 'other' } })
+    expect(page.inject).toEqual({
+      data: {
+        page: 'other',
+      },
+    })
   })
 
   test('unmatched filename falls back to the default template with the global inject.', () => {
@@ -68,14 +108,34 @@ describe('getPageConfig test.', () => {
       '/root/unknown.html',
       pages,
       'index.html',
-      makeConfig({ index: '/root/index.html' }),
-      { data: { global: true }, tags: [{ tag: 'meta' }] },
+      makeConfig({
+        index: '/root/index.html',
+      }),
+      {
+        data: {
+          global: true,
+        },
+        tags: [
+          {
+            tag: 'meta',
+          },
+        ],
+      },
     )
     // v5: the fallback used to drop the global inject entirely.
     expect(page).toEqual({
       filename: 'index.html',
       template: './index.html',
-      inject: { data: { global: true }, tags: [{ tag: 'meta' }] },
+      inject: {
+        data: {
+          global: true,
+        },
+        tags: [
+          {
+            tag: 'meta',
+          },
+        ],
+      },
     })
   })
 
@@ -84,9 +144,19 @@ describe('getPageConfig test.', () => {
       path.join('/root', 'index.html'),
       pages,
       'index.html',
-      makeConfig({ index: '/root/index.html' }),
-      { data: { global: true } },
+      makeConfig({
+        index: '/root/index.html',
+      }),
+      {
+        data: {
+          global: true,
+        },
+      },
     )
-    expect(page.inject).toEqual({ data: { page: 'home' } })
+    expect(page.inject).toEqual({
+      data: {
+        page: 'home',
+      },
+    })
   })
 })

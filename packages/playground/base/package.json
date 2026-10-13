@@ -1,6 +1,6 @@
 {
   "name": "playground-base",
-  "version": "5.0.1",
+  "version": "5.1.0",
   "private": true,
   "scripts": {
     "dev": "vite",
@@ -10,6 +10,6 @@
     "@easy-vite/plugin-html": "workspace:*"
   },
   "devDependencies": {
-    "vite": "^8.2.2"
+    "vite": "^8.3.4"
   }
 }

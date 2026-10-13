@@ -27,7 +27,7 @@
 **现代化工具链**
 
 - ⚡ Vite 8（Rolldown + Oxc）—— 向下兼容至 Vite 5
-- 🪶 仅 **7 个运行时依赖**（原 12+）—— 移除 `fs-extra`、`dotenv`、`consola` 等
+- 🪶 仅 **5 个运行时依赖**（原 12+）—— 移除 `fs-extra`、`dotenv`、`consola`、`pathe` 等
 - 📦 ESM / CJS 双格式导出 + 完整 TypeScript 类型
 - 🛠️ oxlint + oxfmt —— 替代 eslint / prettier
 
@@ -165,7 +165,7 @@ export default defineConfig({
 
 ## 升级到 v5
 
-v5 是一次现代化重构：清理了隐式行为与命名不一致，并大幅扩充测试（10 → 37 个，新增端到端 build/dev 覆盖）。
+v5 是一次现代化重构：清理了隐式行为与命名不一致，并大幅扩充测试（10 → 38 个，新增端到端 build/dev 覆盖）。
 
 **Breaking Changes**
 
@@ -280,7 +280,7 @@ pnpm lint       # 使用 oxlint 检查代码
 pnpm format     # 使用 oxfmt 格式化代码
 ```
 
-> 需要 Node `>=20.19` 与 pnpm `>=10`。代码检查使用 [oxlint](https://oxc.rs/docs/learn-tutorial/about-linter/introduction.html)，格式化使用 [oxfmt](https://oxc.rs/docs/learn-tutorial/about-formatter/introduction.html)。
+> 开发本仓库需要 Node `>=22.13` 与 pnpm `>=11`（发布后的插件本身支持 Node `>=20.19`）。代码检查使用 [oxlint](https://oxc.rs/docs/learn-tutorial/about-linter/introduction.html)，格式化使用 [oxfmt](https://oxc.rs/docs/learn-tutorial/about-formatter/introduction.html)。
 
 ## License
 

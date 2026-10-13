@@ -12,7 +12,12 @@ const devServers: ViteDevServer[] = []
 afterAll(async () => {
   await Promise.all(devServers.map((s) => s.close().catch(() => {})))
   await Promise.all(
-    fixtureRoots.map((root) => rm(root, { recursive: true, force: true })),
+    fixtureRoots.map((root) =>
+      rm(root, {
+        recursive: true,
+        force: true,
+      }),
+    ),
   )
 })
 
@@ -21,7 +26,9 @@ async function makeFixture(files: Record<string, string>) {
   fixtureRoots.push(root)
   for (const [file, content] of Object.entries(files)) {
     const abs = path.join(root, file)
-    await mkdir(path.dirname(abs), { recursive: true })
+    await mkdir(path.dirname(abs), {
+      recursive: true,
+    })
     await writeFile(abs, content)
   }
   return root
@@ -59,18 +66,22 @@ describe('e2e: build', () => {
       plugins: [
         createHtmlPlugin({
           entry: 'src/main.ts',
-          inject: { data: { title: 'e2e-title' } },
+          inject: {
+            data: {
+              title: 'e2e-title',
+            },
+          },
         }),
       ],
-      build: { outDir: 'dist' },
+      build: {
+        outDir: 'dist',
+      },
     })
     const html = await readFile(path.join(root, 'dist/index.html'), 'utf8')
     expect(html).toContain('<title>e2e-title</title>')
     // the template's own module script is replaced by the injected entry
     expect(html).not.toContain('/src/main.ts')
-    expect(html).toMatch(
-      /<script type="module"[^>]*src="\/assets\/index-[\w-]+\.js"/,
-    )
+    expect(html).toMatch(/<script type="module"[^>]*src="\/assets\/index-[\w-]+\.js"/)
   }, 30_000)
 
   test('prefixes the injected entry with a non-root base', async () => {
@@ -82,13 +93,17 @@ describe('e2e: build', () => {
       root,
       base: '/app/',
       logLevel: 'error',
-      plugins: [createHtmlPlugin({ entry: 'src/main.ts' })],
-      build: { outDir: 'dist' },
+      plugins: [
+        createHtmlPlugin({
+          entry: 'src/main.ts',
+        }),
+      ],
+      build: {
+        outDir: 'dist',
+      },
     })
     const html = await readFile(path.join(root, 'dist/index.html'), 'utf8')
-    expect(html).toMatch(
-      /<script type="module"[^>]*src="\/app\/assets\/index-[\w-]+\.js"/,
-    )
+    expect(html).toMatch(/<script type="module"[^>]*src="\/app\/assets\/index-[\w-]+\.js"/)
   }, 30_000)
 
   test('outputs every MPA page at the bundle root', async () => {
@@ -105,13 +120,22 @@ describe('e2e: build', () => {
             {
               filename: 'index.html',
               template: 'index.html',
-              inject: { data: { page: 'home-data' } },
+              inject: {
+                data: {
+                  page: 'home-data',
+                },
+              },
             },
-            { filename: 'other.html', template: 'other.html' },
+            {
+              filename: 'other.html',
+              template: 'other.html',
+            },
           ],
         }),
       ],
-      build: { outDir: 'dist' },
+      build: {
+        outDir: 'dist',
+      },
     })
     const index = await readFile(path.join(root, 'dist/index.html'), 'utf8')
     const other = await readFile(path.join(root, 'dist/other.html'), 'utf8')
@@ -133,15 +157,15 @@ describe('e2e: build', () => {
           template: 'static/index.html',
         }),
       ],
-      build: { outDir: 'dist' },
+      build: {
+        outDir: 'dist',
+      },
     })
     const html = await readFile(path.join(root, 'dist/index.html'), 'utf8')
     expect(html).toContain('<title>app</title>')
     expect(html).toMatch(/src="\/assets\/index-[\w-]+\.js"/)
     // the intermediate `static/` directory is cleaned up after the move
-    await expect(
-      readFile(path.join(root, 'dist/static/index.html'), 'utf8'),
-    ).rejects.toThrow()
+    await expect(readFile(path.join(root, 'dist/static/index.html'), 'utf8')).rejects.toThrow()
   }, 30_000)
 })
 
@@ -155,14 +179,20 @@ describe('e2e: dev server', () => {
       root,
       base: '/app/',
       logLevel: 'error',
-      plugins: [createHtmlPlugin({ entry: 'src/main.ts' })],
+      plugins: [
+        createHtmlPlugin({
+          entry: 'src/main.ts',
+        }),
+      ],
     })
     devServers.push(server)
     await server.listen(0)
     const port = server.httpServer.address().port
 
     const res = await fetch(`http://localhost:${port}/app/`, {
-      headers: { accept: 'text/html' },
+      headers: {
+        accept: 'text/html',
+      },
     })
     expect(res.status).toEqual(200)
     const html = await res.text()
@@ -180,10 +210,8 @@ describe('e2e: dev server', () => {
 
   test('serves the right MPA page at its short filename URL (issue #1)', async () => {
     const root = await makeFixture({
-      'index.html':
-        '<html><head><title>home</title></head><body>home</body></html>',
-      'other.html':
-        '<html><head><title>other</title></head><body>other</body></html>',
+      'index.html': '<html><head><title>home</title></head><body>home</body></html>',
+      'other.html': '<html><head><title>other</title></head><body>other</body></html>',
     })
     const server = await createServer({
       root,
@@ -191,8 +219,14 @@ describe('e2e: dev server', () => {
       plugins: [
         createHtmlPlugin({
           pages: [
-            { filename: 'index.html', template: 'index.html' },
-            { filename: 'other.html', template: 'other.html' },
+            {
+              filename: 'index.html',
+              template: 'index.html',
+            },
+            {
+              filename: 'other.html',
+              template: 'other.html',
+            },
           ],
         }),
       ],
@@ -205,12 +239,16 @@ describe('e2e: dev server', () => {
     // index page's catch-all rule (v5.0.0 matched the template path only,
     // so `/other.html` served the index template's content)
     const home = await fetch(`http://localhost:${port}/`, {
-      headers: { accept: 'text/html' },
+      headers: {
+        accept: 'text/html',
+      },
     })
     expect(await home.text()).toContain('home')
 
     const other = await fetch(`http://localhost:${port}/other.html`, {
-      headers: { accept: 'text/html' },
+      headers: {
+        accept: 'text/html',
+      },
     })
     expect(await other.text()).toContain('other')
   }, 20_000)
@@ -237,13 +275,17 @@ describe('e2e: dev server', () => {
 
     // a navigation request for a static prefix path returns the file…
     const escaped = await fetch(`http://localhost:${port}/static/data.txt`, {
-      headers: { accept: 'text/html' },
+      headers: {
+        accept: 'text/html',
+      },
     })
     expect(await escaped.text()).toContain('raw-static-content')
 
     // …while an unlisted prefix still falls back to the html template
     const fellBack = await fetch(`http://localhost:${port}/assets/data.txt`, {
-      headers: { accept: 'text/html' },
+      headers: {
+        accept: 'text/html',
+      },
     })
     expect(await fellBack.text()).toContain('id="app"')
   }, 20_000)

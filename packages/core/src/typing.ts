@@ -8,7 +8,7 @@ export interface InjectOptions {
   /**
    * @description Data injected into the html template
    */
-  data?: Record<string, any>
+  data?: Record<string, unknown>
 
   tags?: HtmlTagDescriptor[]
 

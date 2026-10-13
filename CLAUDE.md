@@ -10,6 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `pnpm test --run --reporter=verbose packages/core/src/__tests__/html.spec.ts` — run a single test file
 - `pnpm lint` / `pnpm lint:fix` — lint with oxlint (not eslint)
 - `pnpm format` / `pnpm format:check` — format with oxfmt (not prettier)
+- `pnpm check:wrap` — verify object literals are expanded (see `.claude/rules/code-style.md`)
 - `pnpm dev:basic` / `pnpm dev:mpa` / `pnpm dev:entry` / `pnpm dev:base` — build core in watch mode + start a playground dev server
 
 ## Architecture
@@ -55,11 +56,13 @@ packages/
 
 ## Code style
 
-Powered by **oxfmt** (formatter) and **oxlint** (linter) — not prettier/eslint. Config lives in `.oxfmtrc.json` and `.oxlintrc.json`.
+**The single source of truth is [`.claude/rules/code-style.md`](.claude/rules/code-style.md)** — read it before writing or modifying code.
 
-Key oxfmt rules (`.oxfmtrc.json`): no semicolons, single quotes, trailing commas, 80-char print width, 2-space indentation.
+Enforced in three layers: **oxfmt** (all layout) → **oxlint** (semantics/correctness, config in `.oxlintrc.json`) → **human/AI** (naming, structure), plus a self-built `scripts/checkObjectWrap.mjs` for the one rule oxlint cannot express.
 
-`lint-staged` runs `oxfmt --write` + `oxlint --fix` on `.ts/.tsx/.vue/.js/.mjs/.cjs` and `oxfmt --write` on `.md` files via the Husky pre-commit hook.
+Key oxfmt rules (`.oxfmtrc.json`): no semicolons, single quotes, trailing commas, **100-char print width**, 2-space indentation. Object literals are always expanded (opening brace followed by a newline, one member per line) — `pnpm check:wrap` enforces this.
+
+`lint-staged` runs `oxlint --fix` → `oxfmt` → `node scripts/checkObjectWrap.mjs` on `.ts/.tsx/.vue/.js/.mjs/.cjs`, and `oxfmt` on `.json/.css/.scss/.md`, via the Husky pre-commit hook.
 
 ## Constraints
 

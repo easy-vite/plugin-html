@@ -1,3 +1,43 @@
+# [5.1.0] (2026-10-13)
+
+### Dependencies
+
+- 升级 `ejs` 6.0.1 → 7.0.1（major，运行时；已验证 `ejs.render()` API 未变，`ejsOptions` 自定义分隔符、循环语法、`<%= %>` 转义与 `<%- %>` 原样输出行为全部一致）
+- 升级 `vitest` 4.1.11 → 5.0.3（major，dev；engines 要求 Node `^22.12 || ^24 || >=26`，与 CI 矩阵一致）
+- 升级 `node-html-parser` 9.0.1 → 9.0.4、`vite` 8.2.2 → 8.3.4
+- 升级 `oxlint` 1.79.0 → 1.87.0、`oxfmt` 0.64.0 → 0.72.0、`lint-staged` 17.3.0 → 17.6.0
+- 升级 `@types/node` 26.2.0 → 26.6.5、`@commitlint/cli` & `config-conventional` 21.2.2 → 21.2.3
+- 升级 playground 依赖：`vue` 3.5.41 → 3.5.43、`vue-router` 5.2.0 → 5.4.0、`axios` 1.19.0 → 1.20.0、`@vitejs/plugin-vue` 6.0.8 → 6.0.10
+- `typescript` 保留 6.0.3（6.x 最新；不升级至 7.x）
+
+### Features
+
+- 引入项目代码风格规范体系，由四部分组成：
+  - `.claude/rules/code-style.md`：规范文档（执行载体 / 排版 / 命名 / 变量 / 函数 / 对象 / 运算符 / 控制流 / 模块 / 异步 / TypeScript 等 14 节）
+  - `.oxlintrc.json`：`correctness` 由 warn 升为 error，补充 30 条规则并与规范章节逐条对应；新增 3 组 override（`packages/playground/**` 与 `scripts/**` 放宽 `no-console`，测试文件放宽 `no-explicit-any` 与 `require-await`）
+  - `scripts/checkObjectWrap.mjs` + `pnpm check:wrap`：以 TypeScript AST 强制「对象字面量一律展开」（oxlint 无对应规则，oxfmt 的 `objectWrap` 亦无法强制）
+  - `.oxfmtrc.json`：`printWidth` 80 → 100，补显式 `bracketSpacing` 与 `endOfLine`
+- `lint-staged` 改为三层执行顺序：`oxlint --fix` → `oxfmt` → `checkObjectWrap`
+
+### Code Refactoring
+
+- 全仓按新规范重新格式化：对象字面量展开 76 处（含测试断言与函数调用参数），`printWidth` 100 重排 8 个文件
+- 移除源码中的 `any`：新增 `RewriteContext` / `RewriteRule` 接口，`env` 与 `ejsData` 改用 `Record<string, unknown>`
+- `playground/basic/server.mjs`：`statusCode = 200` + `setHeader()` 改为 `writeHead(200, { ... })`，规避 `no-param-reassign`
+
+### ⚠ Note
+
+- `InjectOptions.data` 的类型由 `Record<string, any>` 收紧为 `Record<string, unknown>`。直接传入对象字面量不受影响；若**用显式 `interface` 定义**该对象再传入，TypeScript 会因缺少 index signature 而报错，需改用 `Record<string, unknown>` 或直接传字面量。
+
+### Documentation
+
+- README 中英双语修正过时数字：运行时依赖 7 → **5**（实际值）、测试数 37 → **38**、Development 段环境要求（开发需 Node `>=22.13` / pnpm `>=11`；插件本身支持 Node `>=20.19`）
+- CLAUDE.md 更新：指向规范文档、100 列、新 lint-staged 顺序与 `check:wrap` 命令
+
+### Chores
+
+- 全仓版本同步至 5.1.0
+
 # [5.0.1] (2026-08-24)
 
 ### Bug Fixes

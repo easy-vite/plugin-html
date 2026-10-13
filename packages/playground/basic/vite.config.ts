@@ -21,7 +21,9 @@ export default defineConfig({
         tags: [
           {
             tag: 'div',
-            attrs: { id: 'ddd' },
+            attrs: {
+              id: 'ddd',
+            },
             injectTo: 'body-prepend',
           },
         ],

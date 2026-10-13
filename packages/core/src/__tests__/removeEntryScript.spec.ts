@@ -22,17 +22,13 @@ describe('removeEntryScript test.', () => {
   // v5: without any module script to strip, the document must be returned
   // as the exact same string — no parse → re-serialize round-trip.
   test('html without module scripts is returned by reference.', () => {
-    const html =
-      '<!DOCTYPE html>\n<html data-keep="1">\n<body>x</body>\n</html>'
+    const html = '<!DOCTYPE html>\n<html data-keep="1">\n<body>x</body>\n</html>'
     expect(removeEntryScript(html)).toBe(html)
   })
 
   test('verbose warns about the removed scripts.', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-    removeEntryScript(
-      '<body><script type="module" src="/a.ts"></script></body>',
-      true,
-    )
+    removeEntryScript('<body><script type="module" src="/a.ts"></script></body>', true)
     expect(warn).toHaveBeenCalledOnce()
     expect(warn.mock.calls[0][0]).toContain('/a.ts')
     warn.mockRestore()

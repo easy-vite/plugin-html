@@ -13,11 +13,7 @@ declare module 'connect-history-api-fallback' {
     rewrites?: Rewrite[]
     [key: string]: unknown
   }
-  type NextHandleFunction = (
-    req: unknown,
-    res: unknown,
-    next: () => void,
-  ) => void
+  type NextHandleFunction = (req: unknown, res: unknown, next: () => void) => void
   const history: (options?: Options) => NextHandleFunction
   export default history
 }

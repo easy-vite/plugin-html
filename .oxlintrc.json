@@ -6,20 +6,94 @@
     "node": true,
     "es2021": true
   },
+
+  // correctness = 「明确写错或无用」的代码，升级为 error 以阻断提交
   "categories": {
-    "correctness": "warn"
+    "correctness": "error"
   },
+
+  // 以下规则与 .claude/rules/code-style.md 逐节对应，改规范时同步改这里。
+  // 注意：规范中「允许 continue」「位运算限取整/掩码」「循环外优先 i += 1」是放宽项，
+  // 故此处刻意不启用 no-continue / no-bitwise / no-plusplus。
   "rules": {
     "no-console": "warn",
-    "@typescript-eslint/no-non-null-assertion": "off",
-    "@typescript-eslint/ban-ts-comment": "off",
-    "@typescript-eslint/no-explicit-any": "off"
+
+    // —— 第 3 节 变量与声明 ——
+    "no-var": "error",
+    "prefer-const": "error",
+    "no-redeclare": "error",
+    // 规范约定「未使用变量仅告警不阻断」
+    "no-unused-vars": "warn",
+
+    // —— 第 4 节 函数 ——
+    "prefer-rest-params": "error",
+    "no-param-reassign": ["error", { "props": true }],
+    "array-callback-return": "error",
+
+    // —— 第 5 节 对象与数组 ——
+    "no-dupe-keys": "error",
+    "no-useless-computed-key": "error",
+    "object-shorthand": "error",
+    "accessor-pairs": "error",
+    "grouped-accessor-pairs": ["error", "getBeforeSet"],
+
+    // —— 第 6 节 运算符与表达式 ——
+    // 注：混用 && / || 必须加括号 —— oxlint 无 no-mixed-operators，靠人工遵守
+    "eqeqeq": ["error", "always"],
+    "no-cond-assign": "error",
+    "no-unused-expressions": "error",
+    "no-eval": "error",
+    "no-labels": "error",
+    "no-proto": "error",
+    "no-global-assign": "error",
+    "no-extend-native": "error",
+    "no-alert": "error",
+    "symbol-description": "error",
+
+    // —— 第 7 节 控制流与循环 ——
+    "guard-for-in": "error",
+    "no-array-constructor": "error",
+
+    // —— 第 9 节 异步 ——
+    // 注：return await 仅限 try/catch —— oxlint 无 no-return-await，靠人工遵守
+    "require-await": "error",
+    "no-promise-executor-return": "error",
+    "no-implied-eval": "error",
+
+    // —— 第 10 节 其他 ——
+    "radix": "error",
+    "no-debugger": "error",
+    "no-new-func": "error",
+    "prefer-regex-literals": "error",
+
+    // —— 第 12 节 TypeScript ——
+    "typescript/no-explicit-any": "error",
+    // 非空断言在 Vite 插件钩子的可选配置上确有需要；ts-comment 用于
+    // 跨 Vite 版本的类型差异，故这两条保持放行
+    "typescript/no-non-null-assertion": "off",
+    "typescript/ban-ts-comment": "off"
   },
+
   "overrides": [
     {
       "files": ["packages/playground/**"],
       "rules": {
         "no-console": "off"
+      }
+    },
+    {
+      // 自建检查脚本是 CLI，需要向 stderr 输出违规明细
+      "files": ["scripts/**"],
+      "rules": {
+        "no-console": "off"
+      }
+    },
+    {
+      // 测试里构造 mock / 部分实现常需要 as any，且测试代码不进产物
+      "files": ["**/__tests__/**", "**/*.spec.ts"],
+      "rules": {
+        "typescript/no-explicit-any": "off",
+        "require-await": "off"
       }
     }
   ]

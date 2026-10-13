@@ -2,3 +2,5 @@ node_modules
 dist
 packages/core/README.md
 packages/core/README.zh_CN.md
+.idea
+*.iml

@@ -27,7 +27,7 @@ Rebuilt from `vite-plugin-html` for the **Vite 8** era — ESM-first, **zero-clu
 **Built on a modern toolchain**
 
 - ⚡ Vite 8 (Rolldown + Oxc) — backward compatible to Vite 5
-- 🪶 Only **7 runtime deps** (was 12+) — dropped `fs-extra`, `dotenv`, `consola`, etc.
+- 🪶 Only **5 runtime deps** (was 12+) — dropped `fs-extra`, `dotenv`, `consola`, `pathe`, etc.
 - 📦 Dual ESM / CJS export + full TypeScript types
 - 🛠️ oxlint + oxfmt replacing eslint / prettier
 
@@ -165,7 +165,7 @@ export default defineConfig({
 
 ## Migrating to v5
 
-v5 is a modernization release. It cleans up hidden behaviors and inconsistent naming, and ships a large test-suite expansion (10 → 37 tests, including end-to-end build/dev coverage).
+v5 is a modernization release. It cleans up hidden behaviors and inconsistent naming, and ships a large test-suite expansion (10 → 38 tests, including end-to-end build/dev coverage).
 
 **Breaking changes**
 
@@ -280,7 +280,7 @@ pnpm lint       # lint with oxlint
 pnpm format     # format with oxfmt
 ```
 
-> Requires Node `>=20.19` and pnpm `>=10`. Linting is powered by [oxlint](https://oxc.rs/docs/learn-tutorial/about-linter/introduction.html) and formatting by [oxfmt](https://oxc.rs/docs/learn-tutorial/about-formatter/introduction.html).
+> Development requires Node `>=22.13` and pnpm `>=11` (the published plugin itself supports Node `>=20.19`). Linting is powered by [oxlint](https://oxc.rs/docs/learn-tutorial/about-linter/introduction.html) and formatting by [oxfmt](https://oxc.rs/docs/learn-tutorial/about-formatter/introduction.html).
 
 ## License
 
